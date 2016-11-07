@@ -5,14 +5,8 @@ from optparse import OptionParser
 #import matplotlib.pyplot as plt
 from read_DRP import read_DRP
 import os
-from redshift import redshift
-
-def out_put_spec(wave,flux,error,flag,i,j,folder='spec'):
-  with open('{0}/spec_{1:0>3d}_{2:0>3d}.dat'.format(folder,i,j),'w') as ff:
-    #print >>ff, '# wavelenght    flux    error    flag'
-    for i in range(len(wave)):
-      print >>ff, '{0:>e}    {1:>e}    {2:>e}    {3:>d}'.format(wave[i],flux[i],error[i],flag[i])
-  
+#from redshift import redshift
+import spec_utility as su
 
 if __name__=='__main__':
   parser = OptionParser()
@@ -20,7 +14,6 @@ if __name__=='__main__':
   parser.add_option('-z', action='store',type='float' ,dest='z',default=0.0,help='redshift')
   (options, args) = parser.parse_args()
   lhy=read_DRP(options.fname)
-  
   folder = '%s_spec'%lhy.PLATEIFU
   os.system('mkdir -p %s'%folder)
   lhy.deRedden()
@@ -34,9 +27,10 @@ if __name__=='__main__':
         error = np.sqrt(1.0/lhy.ivar[:,i,j])
         good = (lhy.mask[:,i,j] == 0) * (flux > 0.0) * (error > 0.0)
         mask = np.zeros(flux.shape,dtype='int')
+        error[~good] = 1.0
         mask[~good] = 2
-        flag = mask 
-        out_put_spec(wave, flux, error, flag,  i, j, folder = folder)
+        flag = mask
+        su.out_put_spec(wave, flux, error, flag,  i, j, folder = folder)
         print >> ff, 'spec_{0:0>3d}_{1:0>3d}.dat'.format(i,j)
         pass
   ff.close()

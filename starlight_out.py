@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import matplotlib.pyplot as plt
+from optparse import OptionParser
 import re
 
 def findline(ff,line,imax=10000,p=False):
@@ -13,7 +14,7 @@ def findline(ff,line,imax=10000,p=False):
     if junk == line:
       break      
     if i >  imax:
-      print 'Warnning - Maxmum lines read!'
+      #print 'Warnning - Maxmum lines read!'
       break
 
 
@@ -163,5 +164,7 @@ class read:
     #plt.show()
  
 if __name__=='__main__':
-  lhy=read('8319-1902_spec/out/spec_006_010_out.dat')
-  help(lhy)
+  parser = OptionParser()
+  parser.add_option('-f', action='store',type='string' ,dest='fname',default=None,help='file name')
+  (options, args) = parser.parse_args()
+  lhy=read(options.fname)
