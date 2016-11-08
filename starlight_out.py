@@ -2,7 +2,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from optparse import OptionParser
+from scipy.integrate import quad
+from scipy import interpolate
 import re
+import warnings
+
+warnings.simplefilter("ignore")
 
 def findline(ff,line,imax=10000,p=False):
   i = 0
@@ -12,11 +17,15 @@ def findline(ff,line,imax=10000,p=False):
       print junk
     i+=1
     if junk == line:
-      break      
+      break
     if i >  imax:
       #print 'Warnning - Maxmum lines read!'
       break
 
+
+L_sun = 3.826e33
+L_sun_r = 2.607506e+32
+L_ratio_r = L_sun / L_sun_r
 
 class read:
   '''
@@ -47,6 +56,13 @@ class read:
   def __init__(self,fname):
     with open(fname,'r') as ff:
       findline(ff,'## Normalization info\n')
+      junk = ff.readline()
+      junk = ff.readline()
+      junk = ff.readline()
+      tem = ff.readline()
+      pat = re.compile(r'([-+]?\d+\.\d*?[eE][-+]?\d+)')
+      self.fobs_norm = float(pat.search(tem).group(1))
+
       findline(ff,'## S/N\n')
 
       # read in synthesis results, line by line
@@ -57,7 +73,7 @@ class read:
       self.chi2pdof = float(pat.search(tem).group(1))
       tem = ff.readline()
       pat = re.compile(r'([+-]?[0-9.]+)')
-      self.adev = float(pat.search(tem).group(1))      
+      self.adev = float(pat.search(tem).group(1))
       junk = ff.readline()
       tem = ff.readline()
       pat = re.compile(r'([+-]?[0-9.]+)')
@@ -84,7 +100,7 @@ class read:
       tem = ff.readline()
       pat = re.compile(r'([+-]?[0-9.]+)')
       self.YAV_min = float(pat.search(tem).group(1))
-      # read in star formation history 
+      # read in star formation history
       findline(ff,'# j     x_j(%)      Mini_j(%)     Mcor_j(%)     age_j(yr)     Z_j      (L/M)_j    YAV?  Mstars   component_j        a/Fe...       SSP_chi2r SSP_adev(%)   SSP_AV   SSP_x(%)\n')
       ID = []
       x_j = []
@@ -137,8 +153,8 @@ class read:
       self.SSP_adec = np.array(SSP_adec)
       self.SSP_AV = np.array(SSP_AV)
       self.SSP_x = np.array(SSP_x)
-              
-      # read in synthetic spectrum 
+
+      # read in synthetic spectrum
       findline(ff,'## Synthetic spectrum (Best Model) ##l_obs f_obs f_syn wei\n')
       junk = ff.readline()
       wave = []
@@ -155,14 +171,75 @@ class read:
         syn.append(float(pat.search(tem).group(3)))
         weight.append(float(pat.search(tem).group(4)))
     self.wave = np.array(wave)
-    self.obs = np.array(obs)
-    self.syn = np.array(syn)
+    self.obs = np.array(obs) * self.fobs_norm
+    self.syn = np.array(syn) * self.fobs_norm
     self.weight = np.array(weight)
     self.good = self.weight > 0.0
     #plt.plot(self.wave,self.obs,'r')
     #plt.plot(self.wave,self.syn,'k')
     #plt.show()
- 
+
+  def get_ml_int(self, ml_sps = None):
+    '''
+    calculate the intrisic M*/L
+    '''
+    if ml_sps is None:
+      print 'Error - M*/L of sps must be provided!'
+      exit()
+    if len(ml_sps) != len(self.ID):
+      print 'Error - ml_sps must have the same lenght as the input bases'
+      exit()
+    ml = np.sum(self.Mcor_j) / np.sum(self.Mcor_j / ml_sps)
+    return ml
+
+  def get_ml_obs(self, Filter = None):
+    '''
+    calculate the observed M*/L
+    filter should be n*2 array
+    '''
+    if Filter is None:
+      print 'Error - M*/L of sps must be provided!'
+      exit()
+    filter_wave = Filter[:, 0]
+    filter_flux = Filter[:, 1]
+    f_filter = interpolate.interp1d(filter_wave, filter_flux,
+                                    kind='linear', bounds_error=False,
+                                    fill_value=0.0)
+    ff = interpolate.interp1d(self.wave, self.obs, kind='linear',
+                              bounds_error=False,
+                              fill_value=0.0)
+    def function(wave):
+      return ff(wave)*f_filter(wave)
+
+    I = quad(function, 5000.0, 8000.0)
+    ml = self.Mcor_tot / I[0] / L_ratio_r
+    return ml
+
+  def plot_w(self, shape=(25, 6), figname='sps.png'):
+    w_light = self.x_j.reshape(shape)
+    w_inimass = self.Mini_j.reshape(shape)
+    w_mass = self.Mcor_j.reshape(shape)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(3,1,1)
+    ax2 = fig.add_subplot(3,1,2)
+    ax3 = fig.add_subplot(3,1,3)
+    ax1.imshow(np.rot90(w_light), interpolation='nearest',
+               cmap='gray', aspect='auto', origin='upper')
+    ax2.imshow(np.rot90(w_inimass), interpolation='nearest',
+               cmap='gray', aspect='auto', origin='upper')
+    ax3.imshow(np.rot90(w_mass), interpolation='nearest',
+               cmap='gray', aspect='auto', origin='upper')
+    fig.savefig(figname, dpi=300)
+
+  def plot_spec(self, save=False, fname='spec.png'):
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.plot(self.wave,self.obs,'k')
+    ax.plot(self.wave,self.syn,'r')
+    if save:
+      fig.savefig(fname)
+    else:
+      plt.show()
 if __name__=='__main__':
   parser = OptionParser()
   parser.add_option('-f', action='store',type='string' ,dest='fname',default=None,help='file name')
