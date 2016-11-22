@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
 import pyfits
-import glob
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from ppxf import ppxf
@@ -27,54 +26,111 @@ class ppxf_sps():
     def __init__(self, velscale):
         self.velscale = velscale
 
-    def load_miles(self, FWHM_gal, path='miles_models'):
+    def load_miles_defalt(self, FWHM_gal, path='miles_models'):
         '''
         load miles stellar library, convolve with observed resolusion
         (FWHM_gal), and log rebin using velscale
         '''
         velscale = self.velscale
-        vazdekis = glob.glob('{}/Mun1.30*.fits'.format(path))
-        vazdekis.sort()
         FWHM_tem = 2.51
+        data = np.loadtxt('{}/information_default.dat'.format(path),
+                          dtype=[('name', '45S'), ('Z', 'f8'), ('age', 'f8'),
+                                 ('ml_u', 'f8'), ('ml_g', 'f8'), ('ml_r', 'f8'),
+                                 ('ml_i', 'f8'), ('mnogas', 'f8')])
+        nAges = 26
+        nMetal = 6
+        fnames = data['name'].reshape(nMetal, nAges).T
+        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)
+        self.metal_grid = data['Z'].reshape(nMetal, nAges).T
+        self.ml_u_grid = data['ml_u'].reshape(nMetal, nAges).T
+        self.ml_g_grid = data['ml_g'].reshape(nMetal, nAges).T
+        self.ml_r_grid = data['ml_r'].reshape(nMetal, nAges).T
+        self.ml_i_grid = data['ml_i'].reshape(nMetal, nAges).T
+        self.mnogas_grid = data['mnogas'].reshape(nMetal, nAges).T
         try:
-            hdu = pyfits.open(vazdekis[0])
+            hdu = pyfits.open(path+'/'+fnames[0, 0])
         except:
             print 'Error - Can not open templates file'
             exit(0)
         ssp = hdu[0].data
         h2 = hdu[0].header
+        FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
+        sigma = FWHM_dif/2.355/h2['CDELT1']  # Sigma difference in pixels
         lamRange_temp = h2['CRVAL1'] + \
             np.array([0., h2['CDELT1']*(h2['NAXIS1']-1)])
         sspNew, logLam2, velscale = util.log_rebin(lamRange_temp,
                                                    ssp, velscale=velscale)
-        nAges = 26
-        nMetal = 6
-        templates = np.empty((sspNew.size, nAges, nMetal))
-        FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
-        sigma = FWHM_dif/2.355/h2['CDELT1']  # Sigma difference in pixels
-        logAge_grid = np.empty((nAges, nMetal))
-        metal_grid = np.empty((nAges, nMetal))
-        logAge = np.linspace(np.log10(1), np.log10(17.7828), nAges)
-        metal = [-1.71, -1.31, -0.71, -0.40, 0.00, 0.22]
-        metal_str = ['m1.71', 'm1.31', 'm0.71', 'm0.40', 'p0.00', 'p0.22']
-        for k, mh in enumerate(metal_str):
-            files = [s for s in vazdekis if mh in s]
-            for j, filename in enumerate(files):
-                hdu = pyfits.open(filename)
+        self.logLamT = logLam2
+        self.lamRange_temp = lamRange_temp
+        self.templates = np.empty((sspNew.size, nAges, nMetal))
+        for i in range(nAges):
+            for j in range(nMetal):
+                # print fnames[i, j], self.metal_grid[i, j],\
+                #    self.logAge_grid[i, j]
+                hdu = pyfits.open(path + '/' + fnames[i, j])
                 ssp = hdu[0].data
                 ssp = ndimage.gaussian_filter1d(ssp, sigma)
                 sspNew, logLam2, velscale = \
                     util.log_rebin(lamRange_temp, ssp, velscale=velscale)
                 # Templates are *not* normalized here
-                templates[:, j, k] = sspNew
-                logAge_grid[j, k] = logAge[j]
-                metal_grid[j, k] = metal[k]
-        self.logAge_grid = logAge_grid
-        self.metal_grid = metal_grid
+                self.templates[:, i, j] = sspNew
+
+    def load_miles_all(self, FWHM_gal, path='MILES_Padova00_un_1.30_fits'):
+        velscale = self.velscale
+        FWHM_tem = 2.51
+        data = np.loadtxt('{}/information.dat'.format(path),
+                          dtype=[('name', '45S'), ('Z', 'f8'), ('age', 'f8'),
+                                 ('ml_u', 'f8'), ('ml_g', 'f8'), ('ml_r', 'f8'),
+                                 ('ml_i', 'f8'), ('mnogas', 'f8')])
+        nAges = 50
+        nMetal = 7
+        fnames = data['name'].reshape(nMetal, nAges).T
+        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)
+        self.metal_grid = data['Z'].reshape(nMetal, nAges).T
+        self.ml_u_grid = data['ml_u'].reshape(nMetal, nAges).T
+        self.ml_g_grid = data['ml_g'].reshape(nMetal, nAges).T
+        self.ml_r_grid = data['ml_r'].reshape(nMetal, nAges).T
+        self.ml_i_grid = data['ml_i'].reshape(nMetal, nAges).T
+        self.mnogas_grid = data['mnogas'].reshape(nMetal, nAges).T
+        try:
+            hdu = pyfits.open(path+'/'+fnames[0, 0])
+        except:
+            print 'Error - Can not open templates file'
+            exit(0)
+        ssp = hdu[0].data
+        h2 = hdu[0].header
+        FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
+        sigma = FWHM_dif/2.355/h2['CDELT1']  # Sigma difference in pixels
+        lamRange_temp = h2['CRVAL1'] + \
+            np.array([0., h2['CDELT1']*(h2['NAXIS1']-1)])
+        sspNew, logLam2, velscale = util.log_rebin(lamRange_temp,
+                                                   ssp, velscale=velscale)
         self.logLamT = logLam2
-        self.templates = templates
         self.lamRange_temp = lamRange_temp
-        # fit range used in ppxf
+        self.templates = np.empty((sspNew.size, nAges, nMetal))
+        for i in range(nAges):
+            for j in range(nMetal):
+                hdu = pyfits.open(path + '/' + fnames[i, j])
+                ssp = hdu[0].data
+                ssp = ndimage.gaussian_filter1d(ssp, sigma)
+                sspNew, logLam2, velscale = \
+                    util.log_rebin(lamRange_temp, ssp, velscale=velscale)
+                # Templates are *not* normalized here
+                self.templates[:, i, j] = sspNew
+
+    def select_templates(self, age, z):
+        '''
+        select a subset templates to use
+        '''
+        self.templates = self.templates[np.ix_(np.arange(
+            self.templates.shape[0]), age, z)]
+        self.logAge_grid = self.logAge_grid[np.ix_(age, z)]
+        self.metal_grid = self.metal_grid[np.ix_(age, z)]
+        self.ml_u_grid = self.ml_u_grid[np.ix_(age, z)]
+        self.ml_g_grid = self.ml_g_grid[np.ix_(age, z)]
+        self.ml_r_grid = self.ml_r_grid[np.ix_(age, z)]
+        self.ml_i_grid = self.ml_i_grid[np.ix_(age, z)]
+        self.mnogas_grid = self.mnogas_grid[np.ix_(age, z)]
 
     def load_galaxy(self, wave, flux, fit_range=None,
                     error=None, good=None):
@@ -92,8 +148,10 @@ class ppxf_sps():
             self.fit_range = fit_range
         if (self.fit_range[0] < self.lamRange_temp[0]) or \
                 (self.fit_range[1] > self.lamRange_temp[1]):
-            print 'Error - fit range {:.1f} - {:.1f} is larger than template range {:.1f} - {:.1f}'.format(self.fit_range[0],
-                    self.fit_range[1], self.lamRange_temp[0], self.lamRange_temp[1])
+            print 'Error - fit range {:.1f} - {:.1f} is larger than'\
+                ' template range {:.1f} - {:.1f}'\
+                .format(self.fit_range[0], self.fit_range[1],
+                        self.lamRange_temp[0], self.lamRange_temp[1])
             exit(0)
         velscale = self.velscale
         self.obs_wave = wave
@@ -142,6 +200,35 @@ class ppxf_sps():
                   *args, **kwargs)
         self.pp = pp
 
+    def ebv(self):
+        return self.pp.reddening
+
+    def weights(self):
+        return self.pp.weights.reshape((self.templates.shape[1],
+                                       self.templates.shape[2]))
+
+    def nogas_weights(self):
+        return self.weights() * self.mnogas_grid
+
+    def luminosity_weights(self):
+        return self.nogas_weights() / self.ml_r_grid
+
+    def ml_u(self):
+        return self.nogas_weights().sum() /\
+            (self.nogas_weights() / self.ml_u_grid).sum()
+
+    def ml_g(self):
+        return self.nogas_weights().sum() /\
+            (self.nogas_weights() / self.ml_g_grid).sum()
+
+    def ml_r(self):
+        return self.nogas_weights().sum() /\
+            (self.nogas_weights() / self.ml_r_grid).sum()
+
+    def ml_i(self):
+        return self.nogas_weights().sum() /\
+            (self.nogas_weights() / self.ml_i_grid).sum()
+
 if __name__ == '__main__':
     data = np.loadtxt('vazdekis_ml_test.txt')
     wave = data[:, 0]
@@ -149,15 +236,18 @@ if __name__ == '__main__':
     vscale = np.log(wave[-1] / wave[0]) / len(wave) * c
     flux = data[:, 1]
     lhy = ppxf_sps(vscale)
-    good = flux > 1.0
-    lhy.load_miles(2.8, path='/home/lhy/python/ppxf/miles_models')
-    lhy.load_galaxy(wave, flux, error=flux/1000.0, fit_range=None)
+    # lhy.load_miles_defalt(2.8, path='/home/lhy/python/ppxf/miles_models')
+    lhy.load_miles_all(2.8, path='/home/lhy/python/ppxf/'
+                                 'MILES_Padova00_un_1.30_fits')
+    # lhy.select_templates(range(24, 50), range(1, 7))
+    lhy.load_galaxy(wave, flux, error=flux * 0.0 + 1.0, fit_range=None)
     lhy.run(moments=4, mdegree=0)
-    # plt.plot(lhy.logLamT, lhy.templates[:, 0, 0])
+    # print lhy.weights()
+    # print lhy.nogas_weights() - lhy.weights()
+    # print lhy.ml_r()
     plt.clf()
     plt.subplot(211)
     lhy.pp.plot()   # produce pPXF plot
-    print lhy.pp.sol
     plt.subplot(212)
     s = lhy.templates.shape
     weights = lhy.pp.weights.reshape(s[1:])/lhy.pp.weights.sum()
