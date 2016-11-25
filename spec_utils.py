@@ -113,7 +113,7 @@ def out_put_spec(wave, flux, error, flag, i, j, folder='spec'):
 
 
 def grid(flist, oname, path, config_file='StCv04.C11.config',
-         base_file='Base.BC03.N', mask_file='Masks.EmLines.SDSS.gm',
+         base_file='Base.BC03.S', mask_file='Masks.EmLines.SDSS.gm',
          extinction='CAL', llow_SN=4730.0, lupp_SN=4780.0, Olsyn_ini=3400.0,
          Olsyn_fni=9000.0, v0_start=0.0, vd_start=150.0,
          base_dir='/home/lhy/STARLIGHTv04/BasesDir/'):
@@ -123,9 +123,9 @@ def grid(flist, oname, path, config_file='StCv04.C11.config',
     with open('{}/{}'.format(path, oname), 'w') as ff:
         print >>ff, '{0:<70d}    [Number of fits to run]'.format(Nspec)
         print >>ff, '{0:<70s}    [base_dir]'.format(base_dir)
-        print >>ff, '{0:<70s}    [obs_dir]'.format(path+'/')
+        print >>ff, '{0:<70s}    [obs_dir]'.format('spec/')
         print >>ff, '{0:<70s}    [mask_dir]'.format(mask_dir)
-        print >>ff, '{0:<70s}    [out_dir]'.format(path+'/out/')
+        print >>ff, '{0:<70s}    [out_dir]'.format('out/')
         print >>ff, '{0:<70d}    [your phone number]'.format(-2007200)
         print >>ff, '{0:<70.1f}    [llow_SN]   lower-lambda of S/N window'\
             .format(llow_SN)
