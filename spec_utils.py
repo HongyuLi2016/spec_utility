@@ -64,6 +64,8 @@ label_font =\
                                            style='normal', size=15,
                                            weight='bold', stretch='normal')
 
+c = 299792.458
+
 
 def resample(wave, newWave, flux, error=None,
              interpKind=None, fill_value=0.0):
@@ -286,13 +288,13 @@ def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
 
 def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
                   LageLog, LZLog, Lage, LZ, wave, obs, syn, Mweights, Lweights,
-                  fname='spsout.dat'):
+                  fname='spsout.dat', outfolder='.'):
     data = {'ml_obs_r': ml_obs_r, 'ml_int_r': ml_int_r, 'ebv': ebv,
             'Mnogas': Mnogas, 'MageLog': MageLog,
             'MZlog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
             'LZLog': LZLog, 'Lage': Lage, 'LZ': LZ, 'wave': wave, 'obs': obs,
             'syn': syn, 'Lweights': Lweights, 'Mweights': Mweights}
-    with open(fname, 'wb') as f:
+    with open('{}/{}'.format(outfolder, fname), 'wb') as f:
         pickle.dump(data, f)
 
 
@@ -368,3 +370,9 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
     hdulist = pyfits.HDUList([hdu, tbhdu])
     hdulist.writeto('{}/{}'.format(path, outname), clobber=True)
+
+
+def load_txt_spec(fname):
+    data = np.genfromtxt(fname, dtype=[('wave', 'f8'), ('flux', 'f8'),
+                                       ('err', 'f8'), ('flag', 'i8')])
+    return data['wave'], data['flux'], data['err'], data['flag'] == 1

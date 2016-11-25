@@ -7,6 +7,9 @@ from PyAstronomy.pyasl import unred
 import spec_utils as su
 from voronoi_2d_binning import voronoi_2d_binning
 import os
+import warnings
+
+warnings.simplefilter("ignore")
 
 '''
 read MaNGA DRP linecube, file format is discriped in
@@ -60,7 +63,7 @@ class read_DRP:
         good = self.mask == 0
         # print good
         # self.mask[~good] = 2
-        self.good_spaxel = good.sum(axis=0) > 0
+        self.good_spaxel = good.sum(axis=0)/float(len(self.mask)) > 0.8
 
         # print self.mask
 

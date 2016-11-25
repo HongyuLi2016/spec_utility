@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import pyfits
+import os
 # import matplotlib.pyplot as plt
 from scipy import ndimage
 from ppxf import ppxf
@@ -303,7 +304,9 @@ class ppxf_sps():
                          weights=self.luminosity_weights())
         return np.log10(rst)
 
-    def dump(self, fname='spsout.dat', filterPath='data/SDSS_r_filter'):
+    def dump(self, fname='spsout.dat', filterPath='data/SDSS_r_filter',
+             outfolder='dump'):
+        os.system('mkdir -p {}'.format(outfolder))
         try:
             Filter = su.sdss_r_filter(filterPath)
             ml_obs = self.get_ml_obs(Filter)
@@ -318,11 +321,11 @@ class ppxf_sps():
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.galaxy*self.obs_norm,
                          self.syn*self.obs_norm, Mweights,
-                         Lweights, fname=fname)
+                         Lweights, fname=fname, outfolder=outfolder)
 
     def plot(self, fname=None, parameters=None,
-             filterPath='data/SDSS_r_filter'):
-
+             filterPath='data/SDSS_r_filter', outfolder='figs'):
+        os.system('mkdir -p {}'.format(outfolder))
         if parameters is None:
             parameters = {'ml_int_r': self.ml_r(), 'Mage': self.Mage(),
                           'M[Z/H]': self.MZ(), 'Lage': self.Lage(),
@@ -342,7 +345,7 @@ class ppxf_sps():
                         np.unique(self.logAge_grid), np.unique(self.metal_grid),
                         parameters=parameters)
         if fname is not None:
-            fig.savefig(fname, dpi=400)
+            fig.savefig('{}/{}'.format(outfolder, fname), dpi=400)
 
 
 if __name__ == '__main__':
