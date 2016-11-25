@@ -1,0 +1,16 @@
+1                                                                         [Number of fits to run]
+/home/lhy/STARLIGHTv04/BasesDirSalp/                                      [base_dir]
+7977-6102_spec/                                                           [obs_dir]
+/home/lhy/STARLIGHTv04/                                                   [mask_dir]
+7977-6102_spec/out/                                                       [out_dir]
+-2007200                                                                  [your phone number]
+4730.0                                                                    [llow_SN]   lower-lambda of S/N window
+4780.0                                                                    [lupp_SN]   upper-lambda of S/N window
+3400.0                                                                    [Olsyn_ini]   lower-lambda for fit
+9000.0                                                                    [Olsyn_fni]   upper-lambda for fit
+1                                                                         [Odlsyn]    delta-lambda for fit
+1                                                                         [fscale_chi2] fudge-factor for chi2
+FIT                                                                       [FIT/FXK] Fit or Fix kinematics
+1                                                                         [IsErrSpecAvailable]  1/0 = Yes/No
+1                                                                         [IsFlagSpecAvailable] 1/0 = Yes/No
+spec_020_021.dat    StCv04.C11.config    BaseSalp    Masks.EmLines.SDSS.gm    CAL    0.1    150.0    spec_020_021_out.dat

@@ -1,10 +1,19 @@
 #!/usr/bin/env python
 import numpy as np
 import pyfits
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from scipy import ndimage
 from ppxf import ppxf
 import ppxf_util as util
+from scipy.integrate import quad
+from scipy import interpolate
+import spec_utils as su
+import warnings
+
+warnings.simplefilter("ignore")
+L_sun = 3.826e33
+L_sun_r = 2.607506e+32
+L_ratio_r = L_sun / L_sun_r
 
 
 def convert_mask(lam, good, new_lam):
@@ -40,7 +49,7 @@ class ppxf_sps():
         nAges = 26
         nMetal = 6
         fnames = data['name'].reshape(nMetal, nAges).T
-        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)
+        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)+9.0
         self.metal_grid = data['Z'].reshape(nMetal, nAges).T
         self.ml_u_grid = data['ml_u'].reshape(nMetal, nAges).T
         self.ml_g_grid = data['ml_g'].reshape(nMetal, nAges).T
@@ -85,7 +94,7 @@ class ppxf_sps():
         nAges = 50
         nMetal = 7
         fnames = data['name'].reshape(nMetal, nAges).T
-        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)
+        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)+9.0
         self.metal_grid = data['Z'].reshape(nMetal, nAges).T
         self.ml_u_grid = data['ml_u'].reshape(nMetal, nAges).T
         self.ml_g_grid = data['ml_g'].reshape(nMetal, nAges).T
@@ -133,7 +142,7 @@ class ppxf_sps():
         self.mnogas_grid = self.mnogas_grid[np.ix_(age, z)]
 
     def load_galaxy(self, wave, flux, fit_range=None,
-                    error=None, good=None):
+                    error=None, good=None, eml=True):
         '''
         read galaxy spectrum, specify fitting range, log rebin the observed
         galaxy spectrum
@@ -159,7 +168,9 @@ class ppxf_sps():
         ii = (wave > self.fit_range[0]) * (wave < self.fit_range[1])
         self.obs_norm = np.nanmedian(flux[ii])
         fit_wave = wave[ii]
+        # self.fit_wave = fit_wave
         fit_flux = flux[ii] / self.obs_norm
+        # self.fit_flux = fit_flux
         fit_error = error[ii] / self.obs_norm
         fit_good = good[ii]
         lamRange = [fit_wave[0], fit_wave[-1]]
@@ -172,7 +183,14 @@ class ppxf_sps():
         self.galaxy = galaxy
         self.noise = noise
         self.wave = np.exp(logWave)
-        self.good = new_good
+        eml_good_i = util.determine_goodpixels(logWave, self.lamRange_temp, 0)
+        eml_good = np.zeros_like(new_good, dtype=bool)
+        eml_good[eml_good_i] = True
+        # mask emission lines
+        if eml:
+            self.good = new_good*eml_good
+        else:
+            self.good = new_good
 
     def run(self, *args, **kwargs):
         '''
@@ -195,17 +213,19 @@ class ppxf_sps():
         dv = c * np.log(self.lamRange_temp[0]/self.wave[0])
         start = [0.0, 3.0 * self.velscale]
         pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
-                  start, mask=self.good, quiet=False, degree=-1,
+                  start, mask=self.good, quiet=True, degree=-1,
                   vsyst=dv, clean=False, lam=lam, reddening=reddening,
                   *args, **kwargs)
         self.pp = pp
+        self.syn = self.pp.bestfit
 
     def ebv(self):
         return self.pp.reddening
 
     def weights(self):
         return self.pp.weights.reshape((self.templates.shape[1],
-                                       self.templates.shape[2]))
+                                       self.templates.shape[2]))\
+            * self.obs_norm
 
     def nogas_weights(self):
         return self.weights() * self.mnogas_grid
@@ -229,8 +249,105 @@ class ppxf_sps():
         return self.nogas_weights().sum() /\
             (self.nogas_weights() / self.ml_i_grid).sum()
 
+    def get_ml_obs(self, Filter=None):
+        if Filter is None:
+            print 'Error - Filter must be provided!'
+            exit()
+        filter_wave = Filter[:, 0]
+        filter_flux = Filter[:, 1]
+        f_filter = interpolate.interp1d(filter_wave, filter_flux,
+                                        kind='linear', bounds_error=False,
+                                        fill_value=0.0)
+        ff = interpolate.interp1d(self.obs_wave, self.obs_flux, kind='linear',
+                                  bounds_error=False,
+                                  fill_value=0.0)
+
+        def function(wave):
+            return ff(wave) * f_filter(wave)
+
+        I = quad(function, 5000.0, 8000.0)
+        ml = self.nogas_weights().sum() / I[0] / L_ratio_r
+        return ml
+
+    def MageLog(self):
+        rst = np.average(self.logAge_grid, weights=self.weights())
+        return rst
+
+    def MZLog(self):
+        rst = np.average(self.metal_grid, weights=self.weights())
+        return rst
+
+    def Mage(self):
+        rst = np.average(10**self.logAge_grid, weights=self.weights())
+        return np.log10(rst)
+
+    def MZ(self):
+        rst = np.average(10**self.metal_grid, weights=self.weights())
+        return np.log10(rst)
+
+    def LageLog(self):
+        rst = np.average(self.logAge_grid, weights=self.luminosity_weights())
+        return rst
+
+    def LZLog(self):
+        rst = np.average(self.logAge_grid, weights=self.luminosity_weights())
+        return rst
+
+    def Lage(self):
+        rst = np.average(10**self.logAge_grid,
+                         weights=self.luminosity_weights())
+        return np.log10(rst)
+
+    def LZ(self):
+        rst = np.average(10**self.metal_grid,
+                         weights=self.luminosity_weights())
+        return np.log10(rst)
+
+    def dump(self, fname='spsout.dat', filterPath='data/SDSS_r_filter'):
+        try:
+            Filter = su.sdss_r_filter(filterPath)
+            ml_obs = self.get_ml_obs(Filter)
+        except:
+            print 'Warnning - Calculate obs ml faild!'
+            ml_obs = np.nan
+        Mnogas = self.nogas_weights().sum()
+        Mweights = self.weights()/self.weights().sum()
+        Lweights = self.luminosity_weights()/self.luminosity_weights().sum()
+        su.ssp_dump_data(ml_obs, self.ml_r(), self.ebv(), Mnogas,
+                         self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
+                         self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
+                         self.wave, self.galaxy*self.obs_norm,
+                         self.syn*self.obs_norm, Mweights,
+                         Lweights, fname=fname)
+
+    def plot(self, fname=None, parameters=None,
+             filterPath='data/SDSS_r_filter'):
+
+        if parameters is None:
+            parameters = {'ml_int_r': self.ml_r(), 'Mage': self.Mage(),
+                          'M[Z/H]': self.MZ(), 'Lage': self.Lage(),
+                          'L[Z/H]': self.LZ(), 'Ebv': self.ebv()}
+            try:
+                Filter = su.sdss_r_filter(filterPath)
+                ml_obs = self.get_ml_obs(Filter)
+                parameters['ml_obs_r'] = ml_obs
+            except:
+                print 'Warnning - Calculate obs ml faild!'
+
+        fig =\
+            su.plot_sps(self.wave, self.galaxy, self.syn, self.pp.goodpixels,
+                        self.weights()/self.weights().sum(),
+                        self.luminosity_weights() /
+                        self.luminosity_weights().sum(),
+                        np.unique(self.logAge_grid), np.unique(self.metal_grid),
+                        parameters=parameters)
+        if fname is not None:
+            fig.savefig(fname, dpi=400)
+
+
 if __name__ == '__main__':
-    data = np.loadtxt('vazdekis_ml_test.txt')
+
+    data = np.loadtxt('test/vazdekis_ml_test.txt')
     wave = data[:, 0]
     c = 299792.458
     vscale = np.log(wave[-1] / wave[0]) / len(wave) * c
@@ -239,24 +356,15 @@ if __name__ == '__main__':
     # lhy.load_miles_defalt(2.8, path='/home/lhy/python/ppxf/miles_models')
     lhy.load_miles_all(2.8, path='/home/lhy/python/ppxf/'
                                  'MILES_Padova00_un_1.30_fits')
-    # lhy.select_templates(range(24, 50), range(1, 7))
-    lhy.load_galaxy(wave, flux, error=flux * 0.0 + 1.0, fit_range=None)
+    lhy.select_templates(range(24, 50), range(1, 7))
+    lhy.load_galaxy(wave, flux, error=flux * 0.0 + 1.0,
+                    fit_range=None, eml=False)
     lhy.run(moments=4, mdegree=0)
+    sdss_filter = su.sdss_r_filter(path='data/SDSS_r_filter')
+    # print lhy.MageLog()
+    # print lhy.get_ml_obs(Filter=sdss_filter), lhy.ml_r()
     # print lhy.weights()
     # print lhy.nogas_weights() - lhy.weights()
     # print lhy.ml_r()
-    plt.clf()
-    plt.subplot(211)
-    lhy.pp.plot()   # produce pPXF plot
-    plt.subplot(212)
-    s = lhy.templates.shape
-    weights = lhy.pp.weights.reshape(s[1:])/lhy.pp.weights.sum()
-    plt.imshow(np.rot90(weights), interpolation='nearest',
-               cmap='gist_heat', aspect='auto', origin='upper',
-               extent=[np.log10(1), np.log10(17.7828), -1.9, 0.45])
-    plt.colorbar()
-    plt.title("Mass Fraction")
-    plt.xlabel("log$_{10}$ Age (Gyr)")
-    plt.ylabel("[M/H]")
-    plt.tight_layout()
-    plt.show()
+    lhy.plot(fname='lhy.png')
+    lhy.dump()
