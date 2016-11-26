@@ -320,8 +320,9 @@ class ppxf_sps():
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.galaxy*self.obs_norm,
-                         self.syn*self.obs_norm, Mweights,
-                         Lweights, fname=fname, outfolder=outfolder)
+                         self.syn*self.obs_norm, self.pp.goodpixels, Mweights,
+                         Lweights, self.logAge_grid, self.metal_grid,
+                         fname=fname, outfolder=outfolder)
 
     def plot(self, fname=None, parameters=None,
              filterPath='data/SDSS_r_filter', outfolder='figs'):

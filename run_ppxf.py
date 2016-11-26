@@ -7,6 +7,7 @@ from optparse import OptionParser
 
 if __name__ == '__main__':
     parser = OptionParser()
+    parser.add_option('-p', action='store_true', dest='plot', default=False, help='plot')
     (options, args) = parser.parse_args()
     if len(args) == 0:
         print 'Error - folder name must be probided!'
@@ -27,11 +28,12 @@ if __name__ == '__main__':
             su.load_txt_spec('{}/spec/{}'.format(args[0], flist[i]))
         lhy.load_galaxy(wave, flux, error=error, good=goodbins)
         lhy.run(moments=2, mdegree=0)
-        lhy.plot(fname='sps_{:04d}.png'.format(i),
-                 filterPath='/home/lhy/worksapce/github/'
-                 'spec_utility/data/SDSS_r_filter',
-                 outfolder='{}/figs'.format(args[0]))
+        if options.plot:
+            lhy.plot(fname='sps_{:04d}.png'.format(i),
+                     filterPath='/home/lhy/python/ppxf/'
+                     'data/SDSS_r_filter',
+                     outfolder='{}/figs'.format(args[0]))
         lhy.dump(fname='sps_{:04d}.dat'.format(i),
-                 filterPath='/home/lhy/worksapce/github/'
-                 'spec_utility/data/SDSS_r_filter',
+                 filterPath='/home/lhy/python/ppxf/'
+                 'data/SDSS_r_filter',
                  outfolder='{}/dump'.format(args[0]))

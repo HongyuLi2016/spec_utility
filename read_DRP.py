@@ -139,7 +139,7 @@ class read_DRP:
             iBin = binID == i
             stackedSpec = self.flux[:, iBin].sum(axis=1)
             stackedErr = np.sqrt((1.0 / self.ivar[:, iBin]).sum(axis=1))
-            good = (stackedErr > 0.0) * (stackedSpec > 0.0)
+            good = (stackedErr > 0.0) * (stackedSpec > 0.0) * (~np.isinf(stackedErr))
             stackedErr[~good] = 1.0
             f = open('{}/spec_{:04d}.dat'.format(outFolder, i), 'w')
             for j in range(len(stackedSpec)):

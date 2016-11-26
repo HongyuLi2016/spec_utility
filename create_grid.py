@@ -22,5 +22,5 @@ if __name__=='__main__':
       #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4],gridfolder,base_file = 'BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe
   else:
     #su.grid(flist,'grid_%s.in'%options.folder,gridfolder) #Chab
-    su.grid(flist,'grid_%s.in'%options.folder,gridfolder,base_file = 'BaseSalp', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
+    su.grid(flist,'grid_spec_all.in',gridfolder,base_file = 'BaseSalp', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
     #su.grid(flist,'grid_%s.in'%options.folder,gridfolder,base_file = 'BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe

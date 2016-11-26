@@ -112,7 +112,7 @@ def out_put_spec(wave, flux, error, flag, i, j, folder='spec'):
                 .format(wave[i], flux[i], error[i], flag[i])
 
 
-def grid(flist, oname, path, config_file='StCv04.C11.config',
+def grid(flist, oname, path, config_file='StClhy_medium.config',
          base_file='Base.BC03.S', mask_file='Masks.EmLines.SDSS.gm',
          extinction='CAL', llow_SN=4730.0, lupp_SN=4780.0, Olsyn_ini=3400.0,
          Olsyn_fni=9000.0, v0_start=0.0, vd_start=150.0,
@@ -287,18 +287,27 @@ def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
 
 
 def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
-                  LageLog, LZLog, Lage, LZ, wave, obs, syn, Mweights, Lweights,
+                  LageLog, LZLog, Lage, LZ, wave, obs, syn, goodpixels,
+                  Mweights, Lweights, logAge_grid, metal_grid,
                   fname='spsout.dat', outfolder='.'):
+    '''
+    dump sps results into a binary file (dictionary)
+    '''
     data = {'ml_obs_r': ml_obs_r, 'ml_int_r': ml_int_r, 'ebv': ebv,
             'Mnogas': Mnogas, 'MageLog': MageLog,
             'MZlog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
             'LZLog': LZLog, 'Lage': Lage, 'LZ': LZ, 'wave': wave, 'obs': obs,
-            'syn': syn, 'Lweights': Lweights, 'Mweights': Mweights}
+            'syn': syn, 'goodpixels': goodpixels, 'Lweights': Lweights,
+            'Mweights': Mweights, 'logAge_grid': logAge_grid,
+            'metal_grid': metal_grid}
     with open('{}/{}'.format(outfolder, fname), 'wb') as f:
         pickle.dump(data, f)
 
 
 def ssp_load_data(fname):
+    '''
+    load sps binary file, return a dictionary
+    '''
     with open(fname, 'rb') as f:
         data = pickle.load(f)
     return data
@@ -318,7 +327,7 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
     Lage = np.zeros(len(ID))
     LZ = np.zeros(len(ID))
     for i in range(len(ID)):
-        # try:
+        try:
             fname = 'sps_{:04d}.dat'.format(ID[i])
             data = ssp_load_data('{}/{}'.format(path, fname))
             ml_obs_r[i] = data['ml_obs_r']
@@ -333,7 +342,6 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
             LZLog[i] = data['LZLog']
             Lage[i] = data['Lage']
             LZ[i] = data['LZ']
-            '''
         except:
             print 'Warning - load bin {:04d} faild!'.format(ID[i])
             ml_obs_r[i] = np.nan
@@ -348,7 +356,6 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
             LZLog[i] = np.nan
             Lage[i] = np.nan
             LZ[i] = np.nan
-            '''
     c1 = pyfits.Column(name='ID', format='J', array=ID)
     c2 = pyfits.Column(name='xbin', format='D', array=xbin)
     c3 = pyfits.Column(name='ybin', format='D', array=ybin)
@@ -373,6 +380,26 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
 
 
 def load_txt_spec(fname):
+    '''
+    load txt spectrum in starlight format
+    '''
     data = np.genfromtxt(fname, dtype=[('wave', 'f8'), ('flux', 'f8'),
                                        ('err', 'f8'), ('flag', 'i8')])
     return data['wave'], data['flux'], data['err'], data['flag'] == 1
+
+
+def load_bin_file(fname, Bar=False):
+    '''
+    load txt node.dat file for voronoi bin information
+    '''
+    data = np.genfromtxt(fname, dtype=[('ID', 'i8'), ('xNode', 'f8'),
+                         ('yNode', 'f8'), ('xBar', 'f8'), ('yBar', 'f8')])
+    if Bar:
+        return data['ID'], data['xNode'], data['yNode'],\
+               data['xBar'], data['ybar']
+    else:
+        return data['ID'], data['xNode'], data['yNode']
+
+
+def load_spaxel_file(fname):
+    pass
