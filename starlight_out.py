@@ -249,7 +249,7 @@ class read:
              filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
              mlPath='/home/lhy/python/ppxf/data/Base.BC03.SALP.MLR_r.S150',
              outfolder='figs_star'):
-	os.system('mkdir -p {}'.format(outfolder))
+        os.system('mkdir -p {}'.format(outfolder))
         w_light = self.x_j.reshape(shape)
         w_inimass = self.Mini_j.reshape(shape)
         logAge_grid = np.log10(self.Age_j.reshape(shape))
@@ -318,10 +318,10 @@ class read:
         return self.AV_min / 3.1
 
     def dump(self, fname='spsout.dat', outfolder='dump_star',
-	     filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
+             filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
              mlPath='/home/lhy/python/ppxf/data/Base.BC03.SALP.MLR_r.S150',
-	     shape=(25, 6)):
-	os.system('mkdir -p {}'.format(outfolder))
+             shape=(25, 6)):
+        os.system('mkdir -p {}'.format(outfolder))
         try:
             Filter = su.sdss_r_filter(filterPath)
             ml_obs = self.get_ml_obs(Filter)
@@ -336,12 +336,12 @@ class read:
             ml_int = np.nan
         logAge_grid = np.log10(self.Age_j.reshape(shape))
         metal_grid = np.log10(self.Z_j.reshape(shape)/0.02)
-	good = np.where(self.weight > 0)[0]
+        good = np.where(self.weight > 0)[0]
         su.ssp_dump_data(ml_obs, ml_int, self.ebv(), self.Mcor_tot,
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
-                         self.wave, self.obs*self.fobs_norm,
-                         self.syn*self.fobs_norm, good,
+                         self.wave, self.obs/self.fobs_norm,
+                         self.syn/self.fobs_norm, good,
                          self.weights(shape=(25, 6)),
                          self.luminosity_weights(shape=(25, 6)),
                          logAge_grid, metal_grid,
