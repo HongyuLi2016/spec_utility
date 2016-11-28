@@ -17,10 +17,14 @@ if __name__=='__main__':
   flist = read_rc('%s/list.cat'%specfolder)
   if options.separate:
     for i in range(len(flist)):
-      #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4],gridfolder) #Chab
-      su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4],gridfolder,base_file = 'BaseSalp', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
-      #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4],gridfolder,base_file = 'BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe
+      #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4], gridfolder) #Chab
+      #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4], gridfolder, base_file='BaseSalp', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
+      #su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4], gridfolder, base_file='BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe
+      su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4], gridfolder, base_file='BaseMilesDefault', base_dir = '/home/lhy/STARLIGHTv04/BaseDirMiles/',
+              Olsyn_ini=3622.0, Olsyn_fni=7409.0) # MILES
   else:
-    #su.grid(flist,'grid_%s.in'%options.folder,gridfolder) #Chab
-    su.grid(flist,'grid_spec_all.in',gridfolder,base_file = 'BaseSalp', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
-    #su.grid(flist,'grid_%s.in'%options.folder,gridfolder,base_file = 'BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe
+    #su.grid(flist,'grid_spec_all.in'%options.folder, gridfolder) #Chab
+    #su.grid(flist,'grid_spec_all.in', gridfolder, base_file='BaseSalp', base_dir='/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp
+    #su.grid(flist,'grid_spec_all.in'%options.folder,gridfolder,base_file='BaseSalpGe', base_dir = '/home/lhy/STARLIGHTv04/BasesDirSalpGe/') #SalpGe
+    su.grid([flist[i]],'grid_spec_all.in'%flist[i][0:-4],gridfolder,base_file='BaseMilesDefault', base_dir = '/home/lhy/STARLIGHTv04/BaseDirMiles/',
+            Olsyn_ini=3622.0, Olsyn_fni=7409.0) # MILES

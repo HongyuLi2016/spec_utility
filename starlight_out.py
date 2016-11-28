@@ -167,6 +167,7 @@ class read:
             self.Mstars = np.array(Mstars)
             self.component_j = np.array(component_j)
             self.alpha_Fe = np.array(alpha_Fe)
+            self.ml_r = self.alpha_Fe.copy()
             self.SSP_chi2r = np.array(SSP_chi2r)
             self.SSP_adec = np.array(SSP_adec)
             self.SSP_AV = np.array(SSP_AV)
@@ -208,17 +209,13 @@ class read:
     def luminosity_weights(self, shape=(25, 6)):
         return self.x_j.reshape(shape)
 
-    def get_ml_int(self, ml_sps=None):
+    def get_ml_int(self):
         '''
         calculate the intrisic M*/L
         '''
-        if ml_sps is None:
-            print 'Error - M*/L of sps must be provided!'
-            exit()
-        if len(ml_sps) != len(self.ID):
-            print 'Error - ml_sps must have the same lenght as the input bases'
-            exit()
-        ml = np.sum(self.Mcor_j) / np.sum(self.Mcor_j / ml_sps)
+        if self.ml_r.sum() == 0:
+            print 'Warning - M*/L of sps must be included in Basefile!'
+        ml = np.sum(self.Mcor_j) / np.sum(self.Mcor_j / self.ml_r)
         return ml
 
     def get_ml_obs(self, Filter=None):
@@ -247,7 +244,6 @@ class read:
 
     def plot(self, shape=(25, 6), fname='sps.png', parameters=None,
              filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
-             mlPath='/home/lhy/python/ppxf/data/Base.BC03.SALP.MLR_r.S150',
              outfolder='figs_star'):
         os.system('mkdir -p {}'.format(outfolder))
         w_light = self.x_j.reshape(shape)
@@ -266,8 +262,7 @@ class read:
             except:
                 print 'Warnning - Calculate obs ml faild!'
             try:
-                ml_sps = np.loadtxt(mlPath, usecols=[6])
-                ml_int = self.get_ml_int(ml_sps)
+                ml_int = self.get_ml_int()
                 parameters['ml_int_r'] = ml_int
             except:
                 print 'Warnning - Calculate int ml faild!'
@@ -319,7 +314,6 @@ class read:
 
     def dump(self, fname='spsout.dat', outfolder='dump_star',
              filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
-             mlPath='/home/lhy/python/ppxf/data/Base.BC03.SALP.MLR_r.S150',
              shape=(25, 6)):
         os.system('mkdir -p {}'.format(outfolder))
         try:
@@ -329,8 +323,7 @@ class read:
             print 'Warnning - Calculate obs ml faild!'
             ml_obs = np.nan
         try:
-            ml_sps = np.loadtxt(mlPath, usecols=[6])
-            ml_int = self.get_ml_int(ml_sps)
+            ml_int = self.get_ml_int()
         except:
             print 'Warnning - Calculate int ml faild!'
             ml_int = np.nan
@@ -341,8 +334,8 @@ class read:
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.obs, self.syn, good,
-                         self.weights(shape=(25, 6)),
-                         self.luminosity_weights(shape=(25, 6)),
+                         self.weights(shape=shape)/self.weights(shape=shape).sum(),
+                         self.luminosity_weights(shape=shape)/self.luminosity_weights(shape=shape).sum(),
                          logAge_grid, metal_grid,
                          fname=fname, outfolder=outfolder)
 
@@ -353,8 +346,8 @@ if __name__ == '__main__':
                       default=None, help='file name')
     (options, args) = parser.parse_args()
     lhy = read(options.fname)
-    lhy.plot(shape=(25, 6))
-    lhy.dump(shape=(25, 6))
+    lhy.plot(shape=(26, 6))
+    lhy.dump(shape=(26, 6))
     # print lhy.Age_j
     # print lhy.SSP_x
     # print lhy.wave

@@ -18,15 +18,11 @@ if __name__ == '__main__':
         try:
             lhy = read('{}/out/{}'.format(args[0], fname))
             if options.plot:
-                lhy.plot(shape=(25, 6), fname='sps_{:04d}.png'.format(i),
+                lhy.plot(shape=(26, 6), fname='sps_{:04d}.png'.format(i),
                          filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
-                         mlPath='/home/lhy/python/ppxf/data/'
-                         'Base.BC03.SALP.MLR_r.S150',
                          outfolder='{}/figs_star'.format(args[0]))
-            lhy.dump(shape=(25, 6), fname='sps_{:04d}.dat'.format(i),
+            lhy.dump(shape=(26, 6), fname='sps_{:04d}.dat'.format(i),
                      filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
-                     mlPath='/home/lhy/python/ppxf/'
-                            'data/Base.BC03.SALP.MLR_r.S150',
                      outfolder='{}/dump_star'.format(args[0]))
         except:
             print 'Warning - dump {} fiald!'.format(fname)
