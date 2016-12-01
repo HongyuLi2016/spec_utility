@@ -201,13 +201,19 @@ class read:
         # plt.show()
 
     def weights(self, shape=(25, 6)):
-        return self.Mini_j.reshape(shape)
+        return self.Mini_j.reshape(shape[1], shape[0]).T
 
     def nogas_weights(self, shape=(25, 6)):
-        return self.Mcor_j.reshape(shape)
+        return self.Mcor_j.reshape(shape[1], shape[0]).T
 
     def luminosity_weights(self, shape=(25, 6)):
-        return self.x_j.reshape(shape)
+        return self.x_j.reshape(shape[1], shape[0]).T
+
+    def logAge_grid(self, shape=(25, 6)):
+        return np.log10(self.Age_j.reshape(shape[1], shape[0]).T)
+
+    def metal_grid(self, shape=(25, 6)):
+        return np.log10(self.Z_j.reshape(shape[1], shape[0]).T/0.02)
 
     def get_ml_int(self):
         '''
@@ -246,10 +252,10 @@ class read:
              filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
              outfolder='figs_star'):
         os.system('mkdir -p {}'.format(outfolder))
-        w_light = self.x_j.reshape(shape)
-        w_inimass = self.Mini_j.reshape(shape)
-        logAge_grid = np.log10(self.Age_j.reshape(shape))
-        metal_grid = np.log10(self.Z_j.reshape(shape)/0.02)
+        w_light = self.luminosity_weights(shape=shape)
+        w_inimass = self.weights(shape=shape)
+        logAge_grid = self.logAge_grid(shape=shape)
+        metal_grid = self.metal_grid(shape=shape)
 
         if parameters is None:
             parameters = {'Mage': self.Mage(),
@@ -327,8 +333,8 @@ class read:
         except:
             print 'Warnning - Calculate int ml faild!'
             ml_int = np.nan
-        logAge_grid = np.log10(self.Age_j.reshape(shape))
-        metal_grid = np.log10(self.Z_j.reshape(shape)/0.02)
+        logAge_grid = self.logAge_grid(shape=shape)
+        metal_grid = self.metal_grid(shape=shape)
         good = np.where(self.weight > 0)[0]
         su.ssp_dump_data(ml_obs, ml_int, self.ebv(), self.Mcor_tot,
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
@@ -346,9 +352,9 @@ if __name__ == '__main__':
                       default=None, help='file name')
     (options, args) = parser.parse_args()
     lhy = read(options.fname)
-    lhy.plot(shape=(26, 6))
-    lhy.dump(shape=(26, 6))
-    # print lhy.Age_j
+    # lhy.plot(shape=(26, 6))
+    # lhy.dump(shape=(26, 6))
+    print lhy.Age_j
     # print lhy.SSP_x
     # print lhy.wave
     # print lhy.x_j
