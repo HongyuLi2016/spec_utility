@@ -25,4 +25,4 @@ if __name__ == '__main__':
     lhy.deRedden()
     lhy.deRedshift(z=z)
     sn = lhy.SNR()
-    lhy.voronoiBin(outFolder='{}/spec'.format(args[0]))
+    lhy.voronoiBin(outFolder='{}/spec'.format(args[0]), targetSN=40)

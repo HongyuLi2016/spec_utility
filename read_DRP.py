@@ -102,7 +102,7 @@ class read_DRP:
     def voronoiBin(self, targetSN=30, save=True, outFolder='spec',
                    binName='bin.dat', nodeName='node.dat', *args, **kwargs):
         os.system('mkdir -p {}'.format(outFolder))
-        good = self.good_spaxel.reshape(-1)
+        good = self.good_spaxel.reshape(-1) * (self.sn > 0.0).reshape(-1)
         xbin = self.xposition.reshape(-1)[good]
         ybin = self.yposition.reshape(-1)[good]
         signal = self.sn.reshape(-1)[good]
