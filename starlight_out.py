@@ -315,8 +315,8 @@ class read:
         rst = np.average(self.Z_j / 0.02, weights=self.x_j)
         return np.log10(rst)
 
-    def ebv(self):
-        return self.AV_min / 3.1
+    def ebv(self, Rv=4.05):
+        return self.AV_min / Rv
 
     def dump(self, fname='spsout.dat', outfolder='dump_star',
              filterPath='/home/lhy/python/ppxf/data/SDSS_r_filter',
