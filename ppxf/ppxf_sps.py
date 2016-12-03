@@ -84,6 +84,8 @@ class ppxf_sps():
                     util.log_rebin(lamRange_temp, ssp, velscale=velscale)
                 # Templates are *not* normalized here
                 self.templates[:, i, j] = sspNew
+        self.temp_norm = np.median(self.templates)
+        self.templates /= self.temp_norm
 
     def load_miles_all(self, FWHM_gal, path='MILES_Padova00_un_1.30_fits'):
         velscale = self.velscale
@@ -127,6 +129,8 @@ class ppxf_sps():
                     util.log_rebin(lamRange_temp, ssp, velscale=velscale)
                 # Templates are *not* normalized here
                 self.templates[:, i, j] = sspNew
+        self.temp_norm = np.median(self.templates)
+        self.templates /= self.temp_norm
 
     def select_templates(self, age, z):
         '''
@@ -203,7 +207,8 @@ class ppxf_sps():
         good = mask_array, 1 for good, 0 for mask
         '''
         mdegree = kwargs.pop("mdegree", 0)
-
+        regul = kwargs.pop("regul", None)
+        moments = kwargs.pop("moments", 2)
         if mdegree == 0:
             lam = self.wave
             reddening = 0.0
@@ -216,17 +221,20 @@ class ppxf_sps():
         pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
                   start, mask=self.good, quiet=True, degree=-1,
                   vsyst=dv, clean=False, lam=lam, reddening=reddening,
-                  *args, **kwargs)
+                  mdegree=mdegree, regul=regul, moments=moments)
         self.pp = pp
         self.syn = self.pp.bestfit
 
     def ebv(self):
-        return self.pp.reddening
+        if self.pp.reddening is not None:
+            return self.pp.reddening
+        else:
+            return 0.0
 
     def weights(self):
         return self.pp.weights.reshape((self.templates.shape[1],
                                        self.templates.shape[2]))\
-            * self.obs_norm
+            * self.obs_norm / self.temp_norm
 
     def nogas_weights(self):
         return self.weights() * self.mnogas_grid
@@ -291,7 +299,7 @@ class ppxf_sps():
         return rst
 
     def LZLog(self):
-        rst = np.average(self.logAge_grid, weights=self.luminosity_weights())
+        rst = np.average(self.metal_grid, weights=self.luminosity_weights())
         return rst
 
     def Lage(self):
@@ -328,13 +336,16 @@ class ppxf_sps():
              filterPath='data/SDSS_r_filter', outfolder='figs'):
         os.system('mkdir -p {}'.format(outfolder))
         if parameters is None:
-            parameters = {'ml_int_r': self.ml_r(), 'Mage': self.Mage(),
-                          'M[Z/H]': self.MZ(), 'Lage': self.Lage(),
-                          'L[Z/H]': self.LZ(), 'Ebv': self.ebv()}
+            parameters = {'M*/L_int_r': self.ml_r(),
+                          'M<logAge>': self.MageLog(),
+                          'M<[Z/H]>': self.MZLog(),
+                          'L<logAge>': self.LageLog(),
+                          'L<[Z/H]>': self.LZLog(),
+                          'E(b-v)': self.ebv()}
             try:
                 Filter = su.sdss_r_filter(filterPath)
                 ml_obs = self.get_ml_obs(Filter)
-                parameters['ml_obs_r'] = ml_obs
+                parameters['M*/L_obs_r'] = ml_obs
             except:
                 print 'Warnning - Calculate obs ml faild!'
 
