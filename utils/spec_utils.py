@@ -295,7 +295,7 @@ def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
     '''
     data = {'ml_obs_r': ml_obs_r, 'ml_int_r': ml_int_r, 'ebv': ebv,
             'Mnogas': Mnogas, 'MageLog': MageLog,
-            'MZlog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
+            'MZLog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
             'LZLog': LZLog, 'Lage': Lage, 'LZ': LZ, 'wave': wave, 'obs': obs,
             'syn': syn, 'goodpixels': goodpixels, 'Lweights': Lweights,
             'Mweights': Mweights, 'logAge_grid': logAge_grid,

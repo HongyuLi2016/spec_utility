@@ -258,18 +258,19 @@ class read:
         metal_grid = self.metal_grid(shape=shape)
 
         if parameters is None:
-            parameters = {'Mage': self.Mage(),
-                          'M[Z/H]': self.MZ(), 'Lage': self.Lage(),
-                          'L[Z/H]': self.LZ(), 'Ebv': self.ebv()}
+            parameters = {'M<logAge>': self.MageLog(),
+                          'L<logAge>': self.LageLog(),
+                          'M<[Z/H]>': self.MZLog(),
+                          'L<[Z/H]>': self.LZLog(), 'E(b-v)': self.ebv()}
             try:
                 Filter = su.sdss_r_filter(filterPath)
                 ml_obs = self.get_ml_obs(Filter)
-                parameters['ml_obs_r'] = ml_obs
+                parameters['M*/L_obs_r'] = ml_obs
             except:
                 print 'Warnning - Calculate obs ml faild!'
             try:
                 ml_int = self.get_ml_int()
-                parameters['ml_int_r'] = ml_int
+                parameters['M*/L_int_r'] = ml_int
             except:
                 print 'Warnning - Calculate int ml faild!'
 
@@ -340,8 +341,10 @@ class read:
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.obs, self.syn, good,
-                         self.weights(shape=shape)/self.weights(shape=shape).sum(),
-                         self.luminosity_weights(shape=shape)/self.luminosity_weights(shape=shape).sum(),
+                         self.weights(shape=shape) /
+                         self.weights(shape=shape).sum(),
+                         self.luminosity_weights(shape=shape) /
+                         self.luminosity_weights(shape=shape).sum(),
                          logAge_grid, metal_grid,
                          fname=fname, outfolder=outfolder)
 

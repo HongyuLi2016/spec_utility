@@ -24,7 +24,7 @@ if __name__=='__main__':
       #        Olsyn_ini=3622.0, Olsyn_fni=7409.0, mask_file='Masks.nomask') #
       #        MILES do not mask emls, use Junqiang template
       su.grid([flist[i]],'grid_%s.in'%flist[i][0:-4], gridfolder, base_file='BaseMilesDefault', base_dir = '/home/lhy/STARLIGHTv04/BaseDirMiles/',
-              Olsyn_ini=3622.0, Olsyn_fni=7409.0) # MILES
+              Olsyn_ini=3622.0, Olsyn_fni=7409.0, mask_file='Masks.nomask') # MILES
   else:
     #su.grid(flist,'grid_spec_all.in'%options.folder, gridfolder) #Chab
     #su.grid(flist,'grid_spec_all.in', gridfolder, base_file='BaseSalp', base_dir='/home/lhy/STARLIGHTv04/BasesDirSalp/') #Salp

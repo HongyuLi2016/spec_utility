@@ -28,15 +28,20 @@ if __name__ == '__main__':
     ml_obs_r = data['ml_obs_r']
     ml_int_r = data['ml_int_r']
     Mage = data['Mage']
+    MageLog = data['MageLog']
     Lage = data['Lage']
+    LageLog = data['LageLog']
     MZ = data['MZ']
+    MZLog = data['MZLog']
     LZ = data['LZ']
+    LZLog = data['LZLog']
     ebv = data['ebv']
     logAge_grid = data['logAge_grid']
     metal_grid = data['metal_grid']
 
-    parameters = {'ml_int_r': ml_int_r, 'ml_obs_r': ml_obs_r, 'Mage': Mage,
-                  'M[Z/H]': MZ, 'Lage': Lage, 'L[Z/H]': LZ, 'Ebv': ebv}
+    parameters = {'M*/L_int_r': ml_int_r, 'M*/L_obs_r': ml_obs_r,
+                  'M<logAge>': MageLog, 'L<logAge>': LageLog,
+                  'M<[Z/H]>': MZLog, '<L[Z/H]>': LZLog, 'E(b-v)': ebv}
 
     fig = su.plot_sps(wave, obs, syn, goodpixels, Mweights, Lweights,
                       np.unique(logAge_grid), np.unique(metal_grid),
