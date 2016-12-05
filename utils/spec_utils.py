@@ -231,7 +231,7 @@ def get_Rectangle(x):
 
 
 def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
-            clabel=None, cmap='gist_heat', xlabel='', ylabel=''):
+            clabel=None, cmap='BuPu', xlabel='', ylabel=''):
     if (len(x) < 2) or (len(y) < 2):
         print 'Error - axis must be greater than 2 (spec_utils.plot_2d)'
         exit(1)

@@ -5,6 +5,16 @@ import numpy as np
 from ppxf_sps import ppxf_sps
 
 
+def linexp_sfh(t, A=1.0, ti=1.0, tau=1.0):
+    return A * (t-ti) * np.exp(-(t-ti)/tau)
+
+
+def whiteNoise(wave, A):
+    size = len(wave)
+    noise = np.random.normal(scale=A, size=size)
+    return noise
+
+
 def redden(wave, flux, ebv):
     fratio = reddening_curve(wave, ebv)
     return flux * fratio
@@ -30,6 +40,8 @@ class miles:
         self.templates = lhy.templates.reshape(lhy.templates.shape[0], -1)
         self.logAge = lhy.logAge_grid.reshape(-1)
         self.metal = lhy.metal_grid.reshape(-1)
+        self.ml = lhy.ml_r_grid.reshape(-1)
+        self.nogasM = lhy.mnogas_grid.reshape(-1)
         self.wave = np.exp(lhy.logLamT)
         if linear:
             nwave = np.arange(np.ceil(self.wave[0]),
