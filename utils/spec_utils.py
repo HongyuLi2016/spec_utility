@@ -335,7 +335,7 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
             ebv[i] = data['ebv']
             Mnogas[i] = data['Mnogas']
             MageLog[i] = data['MageLog']
-            MZlog[i] = data['MZlog']
+            MZlog[i] = data['MZLog']
             Mage[i] = data['Mage']
             MZ[i] = data['MZ']
             LageLog[i] = data['LageLog']
