@@ -6,7 +6,7 @@ from ppxf_sps import ppxf_sps
 
 
 def linexp_sfh(t, A=1.0, ti=1.0, tau=1.0):
-    return A * (t-ti) * np.exp(-(t-ti)/tau)
+    return (A * (t-ti) * np.exp(-(t-ti)/tau)).clip(0.0)
 
 
 def whiteNoise(wave, A):
