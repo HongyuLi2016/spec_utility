@@ -103,9 +103,10 @@ def bit_mask(mask_array, bit):
     return mask_array & 2**bit > 0
 
 
-def out_put_spec(wave, flux, error, flag, i, j, folder='spec'):
-    with open('{0}/spec_{1:0>3d}_{2:0>3d}.dat'
-              .format(folder, i, j), 'w') as ff:
+def out_put_spec(wave, flux, error, flag, folder='spec',
+                 specname='spec_0000.dat'):
+    with open('{0}/{1}'
+              .format(folder, specname), 'w') as ff:
         # print >>ff, '# wavelenght    flux    error    flag'
         for i in range(len(wave)):
             print >>ff, '{0:>e}    {1:>e}    {2:>e}    {3:>d}'\
@@ -302,6 +303,26 @@ def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
             'metal_grid': metal_grid}
     with open('{}/{}'.format(outfolder, fname), 'wb') as f:
         pickle.dump(data, f)
+
+
+def convertDump2txt(fname):
+    data = ssp_load_data(fname)
+    with open('{}.txt'.format(fname[0:-4]), 'w') as f:
+        f.write('ml_obs: {:.3f}\n'.format(data['ml_obs_r']))
+        f.write('ml_int: {:.3f}\n'.format(data['ml_int_r']))
+        f.write('ebv: {:.3f}\n'.format(data['ebv']))
+        f.write('M<logAge>: {:.3f}\n'.format(data['MageLog']))
+        f.write('M<[Z/H]>: {:.3f}\n'.format(data['MZLog']))
+        f.write('L<logAge>: {:.3f}\n'.format(data['LageLog']))
+        f.write('L<[Z/H]>: {:.3f}\n'.format(data['LZLog']))
+        print data['logAge_grid'].shape
+        for i in range(data['logAge_grid'].shape[1]):
+            for j in range(data['logAge_grid'].shape[0]):
+                f.write('{:7.3f} {:7.3f} {:7.3f} {:7.3f}\n'
+                        .format(data['logAge_grid'][j, i],
+                                data['metal_grid'][j, i],
+                                data['Mweights'][j, i],
+                                data['Lweights'][j, i]))
 
 
 def ssp_load_data(fname):
