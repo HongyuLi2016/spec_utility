@@ -385,7 +385,7 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
     c6 = pyfits.Column(name='ebv', format='D', array=ebv)
     c7 = pyfits.Column(name='Mnogas', format='D', array=Mnogas)
     c8 = pyfits.Column(name='MageLog', format='D', array=MageLog)
-    c9 = pyfits.Column(name='MZlog', format='D', array=MZlog)
+    c9 = pyfits.Column(name='MZLog', format='D', array=MZlog)
     c10 = pyfits.Column(name='Mage', format='D', array=Mage)
     c11 = pyfits.Column(name='MZ', format='D', array=MZ)
     c12 = pyfits.Column(name='LageLog', format='D', array=LageLog)
@@ -398,6 +398,56 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
     tbhdu = pyfits.BinTableHDU.from_columns(coldefs)
     hdulist = pyfits.HDUList([hdu, tbhdu])
     hdulist.writeto('{}/{}'.format(path, outname), clobber=True)
+
+
+def ssp_rebin_map(mapname, binname='spec/bin.dat',
+                  outname='ssp_rebinMap.fits'):
+    bin_info = np.genfromtxt(binname, dtype=[('i', 'i8'), ('j', 'i8'),
+                                             ('id', 'i8'), ('x0', 'f8'),
+                                             ('y0', 'f8')])
+    hdu = pyfits.open(mapname)[1]
+    data = hdu.data
+    ID = np.zeros([np.max(bin_info['i'])+1, np.max(bin_info['j'])+1])
+    x0 = ID.copy()
+    y0 = ID.copy()
+    ml_obs_r = ID.copy()
+    ml_int_r = ID.copy()
+    ebv = ID.copy()
+    Mnogas = ID.copy()
+    MageLog = ID.copy()
+    MZLog = ID.copy()
+    LageLog = ID.copy()
+    LZLog = ID.copy()
+    for i in range(len(bin_info['i'])):
+        ID[bin_info['i'], bin_info['j']] = bin_info['id']
+        x0[bin_info['i'], bin_info['j']] = bin_info['x0']
+        y0[bin_info['i'], bin_info['j']] = bin_info['y0']
+    for i in range(len(data['ID'])):
+        ii = ID == data['ID'][i]
+        ml_obs_r[ii] = data['ml_obs_r'][i]
+        ml_int_r[ii] = data['ml_int_r'][i]
+        ebv[ii] = data['ebv'][i]
+        Mnogas[ii] = data['Mnogas'][i]
+        MageLog[ii] = data['MageLog'][i]
+        MZLog[ii] = data['MZLog'][i]
+        LageLog[ii] = data['LageLog'][i]
+        LZLog[ii] = data['LZLog'][i]
+        # [ii] = data[''][i]
+    hdu = pyfits.PrimaryHDU()
+    hdu1 = pyfits.ImageHDU(ID, name='bin_id')
+    hdu2 = pyfits.ImageHDU(x0, name='x0')
+    hdu3 = pyfits.ImageHDU(y0, name='y0')
+    hdu4 = pyfits.ImageHDU(ml_obs_r, name='ml_obs_r')
+    hdu5 = pyfits.ImageHDU(ml_int_r, name='ml_int_r')
+    hdu6 = pyfits.ImageHDU(ebv, name='ebv')
+    hdu7 = pyfits.ImageHDU(Mnogas, name='Mnogas')
+    hdu8 = pyfits.ImageHDU(MageLog, name='MageLog')
+    hdu9 = pyfits.ImageHDU(MZLog, name='MZLog')
+    hdu10 = pyfits.ImageHDU(LageLog, name='LageLog')
+    hdu11 = pyfits.ImageHDU(LZLog, name='LZLog')
+    hdulist = pyfits.HDUList([hdu, hdu1, hdu2, hdu3, hdu4, hdu5,
+                              hdu6, hdu7, hdu8, hdu9, hdu10, hdu11])
+    hdulist.writeto('{}'.format(outname), clobber=True)
 
 
 def load_txt_spec(fname):
