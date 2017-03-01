@@ -19,7 +19,8 @@ if __name__ == '__main__':
     lhy = ppxf_sps(vscale)
     lhy.load_miles_all(2.51, path='/home/lhy/python/ppxf/'
                                   'MILES_Padova00_un_1.30_fits')
-    lhy.select_templates(range(24, 50), range(1, 7))
+    #lhy.select_templates(range(24, 50), range(1, 7))
+    lhy.select_templates(list(range(1,50,2)), list(range(1, 7)))
     print 'Star running pPXF'
     print '--------------------------------------------------'
     for i in range(len(flist)):

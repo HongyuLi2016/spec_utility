@@ -220,7 +220,8 @@ class read:
         calculate the intrisic M*/L
         '''
         if self.ml_r.sum() == 0:
-            print 'Warning - M*/L of sps must be included in Basefile!'
+            # print 'Warning - M*/L of sps must be included in Basefile!'
+            pass
         ml = np.sum(self.Mcor_j) / np.sum(self.Mcor_j / self.ml_r)
         return ml
 
