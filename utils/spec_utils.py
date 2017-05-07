@@ -334,7 +334,8 @@ def ssp_load_data(fname):
     return data
 
 
-def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
+def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits',
+                  path='.', Ldist_cm=None):
     ml_obs_r = np.zeros(len(ID))
     ml_int_r = np.zeros(len(ID))
     ebv = np.zeros(len(ID))
@@ -377,6 +378,8 @@ def ssp_write_map(ID, xbin, ybin, outname='sspMap.fits', path='.'):
             LZLog[i] = np.nan
             Lage[i] = np.nan
             LZ[i] = np.nan
+    if Ldist_cm is not None:
+        Mnogas *= (4.0*np.pi*Ldist_cm**2) * 1e-17 / 3.826e33
     c1 = pyfits.Column(name='ID', format='J', array=ID)
     c2 = pyfits.Column(name='xbin', format='D', array=xbin)
     c3 = pyfits.Column(name='ybin', format='D', array=ybin)
@@ -427,7 +430,7 @@ def ssp_rebin_map(mapname, binname='spec/bin.dat',
         ml_obs_r[ii] = data['ml_obs_r'][i]
         ml_int_r[ii] = data['ml_int_r'][i]
         ebv[ii] = data['ebv'][i]
-        Mnogas[ii] = data['Mnogas'][i]
+        Mnogas[ii] = data['Mnogas'][i] / ii.sum()
         MageLog[ii] = data['MageLog'][i]
         MZLog[ii] = data['MZLog'][i]
         LageLog[ii] = data['LageLog'][i]
