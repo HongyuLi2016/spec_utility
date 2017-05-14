@@ -31,22 +31,27 @@ rebin_data = pyfits.open('{}/{}_ssp_rebinMaps.fits'.format(args[0], args[0]))
 bin_id = rebin_data['bin_id'].data
 rebinxbin = rebin_data['x0'].data
 rebinybin = rebin_data['y0'].data
-rebinml_r = rebin_data['ml_obs_r'].data
+rebinml_r_obs = rebin_data['ml_obs_r'].data
+rebinml_r_int = rebin_data['ml_int_r'].data
 rebinMnogas = rebin_data['Mnogas'].data
-rebinL = rebinMnogas / rebinml_r
+rebinL_obs = rebinMnogas / rebinml_r_obs
+rebinL_int = rebinMnogas / rebinml_r_int
 rebinLlogAge = rebin_data['LageLog'].data
 rebinMlogAge = rebin_data['MageLog'].data
 rebinLZ = rebin_data['LZlog'].data
 rebinMZ = rebin_data['MZlog'].data
 ebv = rebin_data['ebv'].data
-maps = {'ml_r': rebinml_r, 'LlogAge': rebinLlogAge, 'MlogAge': rebinMlogAge,
+maps = {'ml_r_obs': rebinml_r_obs, 'ml_r_int': rebinml_r_int,
+        'LlogAge': rebinLlogAge, 'MlogAge': rebinMlogAge,
         'LZ': rebinLZ, 'MZ': rebinMZ, 'ebv': ebv, 'Mnogas': rebinMnogas,
-        'L': rebinL}
-ylabels = {'ml_r': '$\mathbf{M^*/L[M_{\odot}/L_{\odot}]}$',
+        'L_obs': rebinL_obs, 'L_int': rebinL_int}
+ylabels = {'ml_r_obs': '$\mathbf{M^*/L[M_{\odot}/L_{\odot}]}$',
+           'ml_r_int': '$\mathbf{M^*/L[M_{\odot}/L_{\odot}]}$',
            'LlogAge': '$\mathbf{L\ logAge[Gyrs]}$',
            'MlogAge': '$\mathbf{M\ logAge[Gyrs]}$',
            'LZ': '$\mathbf{L\ [Z/H]}$', 'MZ': '$\mathbf{M\ [Z/H]}$',
-           'ebv': '$\mathbf{E(B-V)}$', 'Mnogas': 'Mnogas', 'L': 'L'}
+           'ebv': '$\mathbf{E(B-V)}$', 'Mnogas': 'Mnogas',
+           'L_obs': 'L', 'L_int': 'L'}
 bad = bin_id != -1
 
 os.system('mkdir -p {}/properties'.format(args[0]))
@@ -72,8 +77,8 @@ for key in maps.keys():
     profile[0, :] -= profile[1, :]
     profile[0, :] = -profile[0, :]
     profile[2, :] -= profile[1, :]
-    rst['profile_{}'.format(key)] = profile
-    rst['inReMap_{}'.format(key)] = inReMap
+    rst['profile_{}'.format(key)] = profile.copy()
+    rst['inReMap_{}'.format(key)] = inReMap.copy()
     fig = plt.figure(figsize=(4, 3.5))
     ax = fig.add_subplot(111)
     ax.set_title(key)

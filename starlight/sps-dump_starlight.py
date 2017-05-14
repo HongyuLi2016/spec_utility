@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-from starlight_out import read
+'''
+Convert starlgiht output file to python pickle format
+'''
+from sps_starlight_out import read
 from optparse import OptionParser
 import numpy as np
 

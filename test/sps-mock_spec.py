@@ -2,7 +2,7 @@
 import spec_utils as su
 from ppxf import reddening_curve  # Calzetti (2000)
 import numpy as np
-from ppxf_sps import ppxf_sps
+from sps_ppxf import ppxf_sps
 
 
 def linexp_sfh(t, A=1.0, ti=1.0, tau=1.0):

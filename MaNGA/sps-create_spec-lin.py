@@ -1,7 +1,8 @@
 #!/usr/bin/env python
-# import numpy as np
-# import spec_utils as su
-from read_DRP import read_DRP
+'''
+read DRP linecube, Voronoi bin spectum and output to a text file
+'''
+from sps_read_linDRP import read_DRP
 from optparse import OptionParser
 import pyfits
 
