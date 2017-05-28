@@ -9,18 +9,17 @@ Including data preparation, software wrapper, output analysis and visulization.
 Contents
 -----
 Below is a brief description of the contents of the directories in the root directory:
-
- * `MaNGA`: Contains the python scripts handling with MaNGA data preparation
-
- * `data`: Contains some useful data files (e.g. templates properties)
-
- * `ppxf`: Contains the python wrapper for ppxf
+ * `MaNGA`: Contains the python scripts handling with MaNGA data preparation  
  
- * `starlight`: Contains the python scripts for starlight input file preparation, output analysis and visulization.
+ * `data`: Contains some useful data files (e.g. templates properties)  
  
- * `test`: Contains some test scripts and data
+ * `ppxf`: Contains the python wrapper for ppxf  
  
- * `utils`: other utilities for ploting figures, dumping/loading data etc.
+ * `starlight`: Contains the python scripts for starlight input file preparation, output analysis and visulization.  
+ 
+ * `test`: Contains some test scripts and data  
+ 
+ * `utils`: other utilities for ploting figures, dumping/loading data etc.  
  
 Workflow
 -----
@@ -36,13 +35,13 @@ Workflow
   * `qsub.py`: submit pbs jobs
   * `sps-dump_starlight.py`: dump starlight output files into a binary file (pickable python dictionary)
   * `sps_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
-  * `sps_plot_spec.py`: plot figures if necessary.   
+  * `sps_plot_spec.py`: plot figures if necessary.  
+
 * `ppxf`
-  * `sps-create_spec-lin.py`: MaNGA data preparation. (This is not necessary if one has run this for starlight)
-   This will create a folder named spec in the working directory, which contain the txt spectrum files and
-   vorinoi bin information.
-  * `sps-create_spec-lin.py`: MaNGA data preparation. (This is not necessary if one has run this for starlight)
-  * `sps-pbs_ppxf.sh`: Pbs script preparation.
+  * `sps-create_spec-lin.py`: MaNGA data preparation (This is not necessary if one has run this for starlight).
+    This will create a folder named spec in the working directory, which contain the txt spectrum files and
+    vorinoi bin information.
+  * `sps-pbs_ppxf.sh`: Pbs script preparation.
   * `qsub.py`: submit pbs jobs. One can also choose to run without pbs (using run_ppxf.py)
   * `sps_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
   * `download_ssp.sh`: create a *_rst folder in the working directory, including dumped data and some necessary files.
