@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 import numpy as np
 from JAM.utils import util_fig
-from JAM.utils import velocity_plot
 import matplotlib.pyplot as plt
 from optparse import OptionParser
-import pyfits
 import pickle
-import os
 util_fig.ticks_font.set_size(10)
 
+
 def get_slope(r, y, lim=[0.5, 1.5]):
-    good = (r<lim[1]) * (r>lim[0]) * (~np.isinf(y[1, :]))
+    good = (r < lim[1]) * (r > lim[0]) * (~np.isinf(y[1, :]))
     z = np.polyfit(r[good], y[1, good], 1)
     p = np.poly1d(z)
     fit_x = r[good]
@@ -20,14 +18,14 @@ def get_slope(r, y, lim=[0.5, 1.5]):
 parser = OptionParser()
 (options, args) = parser.parse_args()
 if len(args) != 1:
-    print 'Error - please provide a folder name'
+    print('Error - please provide a folder name')
     exit(1)
 
 with open('{}/properties/profiles.dat'.format(args[0])) as f:
     data = pickle.load(f)
 # print data.keys()
 
-nre = [0.5, 1.0, 1.5]
+nre = [0.125, 1.0, 1.5]
 glim = [0.5, 1.5]
 # logAge
 LlogAge = np.zeros(len(nre))
@@ -43,6 +41,8 @@ Ar = np.zeros(len(nre))
 # Luminority
 Lobs = np.zeros(len(nre))
 Lint = np.zeros(len(nre))
+
+# -------------------calculate mean values wthin nre--------------------------
 for i in range(len(nre)):
     ii = data['inRe_r_ell'] < nre[i]
     Mnogas_in = data['inReMap_Mnogas'][ii]
@@ -61,6 +61,28 @@ for i in range(len(nre)):
     Ar[i] = 2.5 * np.log10(Lint_in.sum()/Lobs_in.sum())
     Lobs[i] = Lobs_in.sum()
     Lint[i] = Lint_in.sum()
+
+# ------------------calculate mean values wthin 2 arcsec----------------------
+r = np.sqrt(data['inRe_x']**2 + data['inRe_y']**2)
+i_2arcsec = r < 2.0
+Mnogas_in = data['inReMap_Mnogas'][i_2arcsec]
+Lobs_in = data['inReMap_L_obs'][i_2arcsec]
+Lint_in = data['inReMap_L_int'][i_2arcsec]
+MlogAge_in = data['inReMap_MlogAge'][i_2arcsec]
+LlogAge_in = data['inReMap_LlogAge'][i_2arcsec]
+LZ_in = data['inReMap_LZ'][i_2arcsec]
+MZ_in = data['inReMap_MZ'][i_2arcsec]
+MlogAge_ctr = np.average(MlogAge_in, weights=Mnogas_in)
+LlogAge_ctr = np.average(LlogAge_in, weights=Lobs_in)
+MZ_ctr = np.average(MZ_in, weights=Mnogas_in)
+LZ_ctr = np.average(LZ_in, weights=Lobs_in)
+ml_obs_ctr = Mnogas_in.sum()/Lobs_in.sum()
+ml_int_ctr = Mnogas_in.sum()/Lint_in.sum()
+Ar_ctr = 2.5 * np.log10(Lint_in.sum()/Lobs_in.sum())
+Lobs_ctr = Lobs_in.sum()
+Lint_ctr = Lint_in.sum()
+
+# --------------------------calculate gradients-------------------------------
 gMlogAge = get_slope(data['r'], data['profile_MlogAge'], lim=glim)
 gLlogAge = get_slope(data['r'], data['profile_LlogAge'], lim=glim)
 gMZ = get_slope(data['r'], data['profile_MZ'], lim=glim)
@@ -68,6 +90,7 @@ gLZ = get_slope(data['r'], data['profile_LZ'], lim=glim)
 gml_obs = get_slope(data['r'], data['profile_ml_r_obs'], lim=glim)
 gml_int = get_slope(data['r'], data['profile_ml_r_int'], lim=glim)
 
+# -------------------------- plot fitted values ------------------------------
 inRe_maps = {}
 inRe_maps['MlogAge'] = data['inReMap_MlogAge']
 inRe_maps['LlogAge'] = data['inReMap_LlogAge']
@@ -117,6 +140,8 @@ for key in inRe_maps.keys():
     ax.set_ylabel(ylabels[key])
     util_fig.set_labels(ax)
     fig.savefig('{}/properties/profile-{}.png'.format(args[0], key), dpi=150)
+
+# ----------------------------- save results --------------------------------
 rst = {}
 rst['nre'] = nre
 rst['glim'] = glim
@@ -126,6 +151,13 @@ rst['MZ'] = MZ
 rst['LZ'] = LZ
 rst['ml_obs'] = ml_obs
 rst['ml_int'] = ml_int
+rst['MlogAge_ctr'] = MlogAge_ctr
+rst['LlogAge_ctr'] = LlogAge_ctr
+rst['MZ_ctr'] = MZ_ctr
+rst['LZ_ctr'] = LZ_ctr
+rst['ml_obs_ctr'] = ml_obs_ctr
+rst['ml_int_ctr'] = ml_int_ctr
+
 rst['gMlogAge'] = gMlogAge[0]
 rst['gLlogAge'] = gLlogAge[0]
 rst['gMZ'] = gMZ[0]

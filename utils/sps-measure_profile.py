@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
 from JAM.utils import util_fig
-from JAM.utils import velocity_plot
 import matplotlib.pyplot as plt
 from optparse import OptionParser
 import pyfits
@@ -12,7 +11,7 @@ util_fig.ticks_font.set_size(10)
 parser = OptionParser()
 (options, args) = parser.parse_args()
 if len(args) != 1:
-    print 'Error - please provide a folder name'
+    print('Error - please provide a folder name')
     exit(1)
 
 # read information
@@ -25,7 +24,7 @@ pa = info['pa']
 theta = np.radians(90.0-pa)
 ba = info['ba']
 
-#read rebin maps
+# read rebin maps
 rebin_data = pyfits.open('{}/{}_ssp_rebinMaps.fits'.format(args[0], args[0]))
 
 bin_id = rebin_data['bin_id'].data
@@ -61,11 +60,13 @@ good = bin_id != -1
 r_ell = ((x0/a)**2 + (y0/b)**2)**0.5
 nre = 2.5
 inRe = (r_ell < nre) * good
-inRe_r_ell =r_ell[inRe]
+inRe_r_ell = r_ell[inRe]
+inRe_x = x0[inRe]
+inRe_y = y0[inRe]
 bin_id = np.floor(r_ell[inRe] / 0.1).astype(int)
 r = np.arange(0.05, nre, 0.1)
 profile = np.zeros([3, len(r)])
-rst = {'r': r, 'inRe_r_ell': inRe_r_ell}
+rst = {'r': r, 'inRe_r_ell': inRe_r_ell, 'inRe_x': inRe_x, 'inRe_y': inRe_y}
 for key in maps.keys():
     inReMap = maps[key][inRe]
     for i in range(len(r)):
