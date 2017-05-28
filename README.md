@@ -1,8 +1,8 @@
-#Spectrum fitting utilities 
+Spectrum fitting utilities 
 ========
 
-Python scripts for spectrum fitting with MaNGA data (not limitied to MaNGA) based on starlight and pPXF software. 
-Include data preparation, software wrapper, output analysis and visulization.
+Python scripts for spectra fitting with MaNGA data (not limitied to MaNGA) based on starlight and pPXF software. 
+Including data preparation, software wrapper, output analysis and visulization.
 
 ========
 
@@ -25,26 +25,26 @@ Below is a brief description of the contents of the directories in the root dire
 Workflow
 -----
  * `starlight`
-  * `make_ssp_data.py`: MaNGA data preparation. 
-    This will create a folder named spec in the working directory, which contain the txt spectrum files and vorinoi
-    bin information.
-  * `create_grid.py`: Starlight input grid file preparation.
-    This will create 3 folders (grid, grid files; juck, pbs *.o *.e files; out, starlight output resutls). The grid
-    file will created in grid folder.
-  * `pbs_starlight.sh`: Pbs script preparation.
+  * `sps-create_spec-lin.py`: MaNGA data preparation. 
+    This will create a folder named spec in the working directory, which contain the txt spectrum files 
+    and vorinoi bin information.
+  * `sps-create_starlight_grid.py`: Starlight input grid file preparation.
+    This will create 3 folders (grid, including grid files; juck, including pbs *.o *.e files; out, including
+    starlight output resutls). The grid file will created in grid folder.
+  * `sps-pbs_starlight.sh`: Pbs script preparation.
   * `copy.sh` (under ~/STARLIGHTv04/config/): Copy some base files and configuration files under the working directory.
   * `qsub.py`: submit pbs jobs
-  * `dump_starlight.py`: dump starlight output files into a binary file (pickable python dictionary)
-  * `ssp_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
+  * `sps-dump_starlight.py`: dump starlight output files into a binary file (pickable python dictionary)
+  * `sps_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
   * `sps_plot_spec.py`: plot figures if necessary. 
   
  * `ppxf`
-  * `make_ssp_data.py`: MaNGA data preparation. (This is not necessary if one has run this for starlight)
+  * `sps-create_spec-lin.py`: MaNGA data preparation. (This is not necessary if one has run this for starlight)
     This will create a folder named spec in the working directory, which contain the txt spectrum files and vorinoi
     bin information.
-  * `pbs_ppxf.sh`: Pbs script preparation.
+  * `sps-pbs_ppxf.sh`: Pbs script preparation.
   * `qsub.py`: submit pbs jobs. One can also choose to run without pbs (using run_ppxf.py)
-  * `ssp_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
+  * `sps_maps.py`: create a map file (e.g. M*/L, logAge, [Z/H]) in fits format.
   * `download_ssp.sh`: create a *_rst folder in the working directory, including dumped data and some necessary files.
   * `sps_plot_spec.py`: plot figures if necessary.
 
