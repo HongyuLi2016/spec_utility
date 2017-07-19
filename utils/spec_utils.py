@@ -159,11 +159,12 @@ def plot_sps(wave, obs, syn, good, Mweights, Lweights, Ages, Z,
              parameters={}):
     # print Ages, Z
     plt.clf()
-    fig = plt.figure(figsize=(9, 9))
+    plt.figure(figsize=(9, 9))
     gs = gridspec.GridSpec(3, 3)
     gs.update(left=0.09, right=0.98, top=0.98, bottom=0.07,
               hspace=0.3, wspace=0.3)
     ax1 = plt.subplot(gs[0, :])
+    fig = plt.gcf()
     ll, rr = np.min(wave), np.max(wave)
     mn, mx = np.min(syn[good]), np.max(syn[good])
     resid = mn + obs - syn
@@ -224,6 +225,7 @@ def get_Rectangle(x):
     size_x = np.zeros_like(x)
     for i in range(1, len(pos_x)):
         pos_x[i] = (x[i]+x[i-1])*0.5
+    # print x
     pos_x[0] = x[0] - (pos_x[1] - x[0])
     for i in range(0, len(pos_x)-1):
         size_x[i] = pos_x[i+1] - pos_x[i]

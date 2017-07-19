@@ -60,7 +60,7 @@ class ppxf_sps():
         try:
             hdu = pyfits.open(path+'/'+fnames[0, 0])
         except:
-            print 'Error - Can not open templates file'
+            print('Error - Can not open templates file')
             exit(0)
         ssp = hdu[0].data
         h2 = hdu[0].header
@@ -107,7 +107,7 @@ class ppxf_sps():
         try:
             hdu = pyfits.open(path+'/'+fnames[0, 0])
         except:
-            print 'Error - Can not open templates file'
+            print('Error - Can not open templates file')
             exit(0)
         ssp = hdu[0].data
         h2 = hdu[0].header
@@ -125,6 +125,57 @@ class ppxf_sps():
                 hdu = pyfits.open(path + '/' + fnames[i, j])
                 ssp = hdu[0].data
                 ssp = ndimage.gaussian_filter1d(ssp, sigma)
+                sspNew, logLam2, velscale = \
+                    util.log_rebin(lamRange_temp, ssp, velscale=velscale)
+                # Templates are *not* normalized here
+                self.templates[:, i, j] = sspNew
+        self.temp_norm = np.median(self.templates)
+        self.templates /= self.temp_norm
+
+    def load_bc03(self, FWHM_gal, path='BC03_Salp'):
+        velscale = self.velscale
+        # FWHM_tem = 2.51
+        data = np.loadtxt('{}/information.dat'.format(path),
+                          dtype=[('name', '45S'), ('Z', 'f8'), ('age', 'f8'),
+                                 ('ml_u', 'f8'), ('ml_g', 'f8'), ('ml_r', 'f8'),
+                                 ('ml_i', 'f8'), ('mnogas', 'f8')])
+        nAges = 221
+        nMetal = 6
+        fnames = data['name'].reshape(nMetal, nAges).T
+        self.logAge_grid = np.log10(data['age'].reshape(nMetal, nAges).T)+9.0
+        self.metal_grid = data['Z'].reshape(nMetal, nAges).T
+        self.ml_u_grid = data['ml_u'].reshape(nMetal, nAges).T
+        self.ml_g_grid = data['ml_g'].reshape(nMetal, nAges).T
+        self.ml_r_grid = data['ml_r'].reshape(nMetal, nAges).T
+        self.ml_i_grid = data['ml_i'].reshape(nMetal, nAges).T
+        self.mnogas_grid = data['mnogas'].reshape(nMetal, nAges).T
+        # m, n = 220, 5
+        # print(fnames[m, n])
+        # print(10**self.logAge_grid[m, n]/1e9)
+        # print(self.metal_grid[m, n])
+        # print(np.diff(self.logAge_grid[:, 0]))
+        # exit()
+        try:
+            tem_spec = np.genfromtxt(path+'/'+fnames[0, 0])
+        except:
+            print('Error - Can not open templates file')
+            exit(0)
+        # ssp = hdu[0].data
+        # h2 = hdu[0].header
+        # FWHM_dif = np.sqrt(FWHM_gal**2 - FWHM_tem**2)
+        # sigma = FWHM_dif/2.355/h2['CDELT1']  # Sigma difference in pixels
+        lamRange_temp = np.array([tem_spec[0, 0], tem_spec[-1, 0]])
+        sspNew, logLam2, velscale = util.log_rebin(lamRange_temp,
+                                                   tem_spec[:, 1],
+                                                   velscale=velscale)
+        self.logLamT = logLam2
+        self.lamRange_temp = lamRange_temp
+        self.templates = np.empty((sspNew.size, nAges, nMetal))
+        for i in range(nAges):
+            for j in range(nMetal):
+                tem_spec = np.genfromtxt(path+'/'+fnames[i, j])
+                ssp = tem_spec[:, 1]
+                # ssp = ndimage.gaussian_filter1d(ssp, sigma)
                 sspNew, logLam2, velscale = \
                     util.log_rebin(lamRange_temp, ssp, velscale=velscale)
                 # Templates are *not* normalized here
@@ -162,10 +213,10 @@ class ppxf_sps():
             self.fit_range = fit_range
         if (self.fit_range[0] < self.lamRange_temp[0]) or \
                 (self.fit_range[1] > self.lamRange_temp[1]):
-            print 'Error - fit range {:.1f} - {:.1f} is larger than'\
-                ' template range {:.1f} - {:.1f}'\
-                .format(self.fit_range[0], self.fit_range[1],
-                        self.lamRange_temp[0], self.lamRange_temp[1])
+            print('Error - fit range {:.1f} - {:.1f} is larger than'
+                  ' template range {:.1f} - {:.1f}'
+                  .format(self.fit_range[0], self.fit_range[1],
+                          self.lamRange_temp[0], self.lamRange_temp[1]))
             exit(0)
         velscale = self.velscale
         self.obs_wave = wave
@@ -260,7 +311,7 @@ class ppxf_sps():
 
     def get_ml_obs(self, Filter=None):
         if Filter is None:
-            print 'Error - Filter must be provided!'
+            print('Error - Filter must be provided!')
             exit()
         filter_wave = Filter[:, 0]
         filter_flux = Filter[:, 1]
@@ -319,7 +370,7 @@ class ppxf_sps():
             Filter = su.sdss_r_filter(filterPath)
             ml_obs = self.get_ml_obs(Filter)
         except:
-            print 'Warnning - Calculate obs ml faild!'
+            print('Warnning - Calculate obs ml faild!')
             ml_obs = np.nan
         Mnogas = self.nogas_weights().sum()
         Mweights = self.weights()/self.weights().sum()
@@ -347,7 +398,7 @@ class ppxf_sps():
                 ml_obs = self.get_ml_obs(Filter)
                 parameters['M*/L_obs_r'] = ml_obs
             except:
-                print 'Warnning - Calculate obs ml faild!'
+                print('Warnning - Calculate obs ml faild!')
 
         fig =\
             su.plot_sps(self.wave, self.galaxy, self.syn, self.pp.goodpixels,
@@ -361,7 +412,6 @@ class ppxf_sps():
 
 
 if __name__ == '__main__':
-
     data = np.loadtxt('test/vazdekis_ml_test.txt')
     wave = data[:, 0]
     c = 299792.458
@@ -369,17 +419,25 @@ if __name__ == '__main__':
     flux = data[:, 1]
     lhy = ppxf_sps(vscale)
     # lhy.load_miles_defalt(2.8, path='/home/lhy/python/ppxf/miles_models')
-    lhy.load_miles_all(2.8, path='/home/lhy/python/ppxf/'
-                                 'MILES_Padova00_un_1.30_fits')
-    lhy.select_templates(range(24, 50), range(1, 7))
+    # lhy.load_miles_all(2.8, path='/Users/lhy/astro_workspace/'
+    #                    'astro-packages/ppxf/MILES_Padova00_un_1.30_fits')
+    # lhy.select_templates(range(24, 50), range(1, 7))
+    lhy.load_bc03(2.8, path='/Users/lhy/astro_workspace/astro-packages'
+                  '/ppxf/BC03_Salp')
+
+    age = [20, 45, 55, 61, 67, 70, 78, 90, 104, 110, 116, 120, 125,
+           130, 135, 138, 139, 150, 158, 166, 171, 181, 193, 201, 213]
+    for i in range(len(age)):
+        age[i] -= 1
+    lhy.select_templates(age, range(0, 6))
     lhy.load_galaxy(wave, flux, error=flux * 0.0 + 1.0,
                     fit_range=None, eml=False)
     lhy.run(moments=4, mdegree=0)
-    sdss_filter = su.sdss_r_filter(path='data/SDSS_r_filter')
+    # sdss_filter = su.sdss_r_filter(path='data/SDSS_r_filter')
     # print lhy.MageLog()
     # print lhy.get_ml_obs(Filter=sdss_filter), lhy.ml_r()
     # print lhy.weights()
     # print lhy.nogas_weights() - lhy.weights()
     # print lhy.ml_r()
     lhy.plot(fname='lhy.png')
-    lhy.dump()
+    # lhy.dump()

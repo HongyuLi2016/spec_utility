@@ -16,7 +16,7 @@ if __name__ == '__main__':
     if len(args) == 0:
         print 'Error - file name must be probided!'
         exit(1)
-    os.system('mkdir -p {}'.format(options.outfolder))
+
     figname = args[0][0:-4]+'.png'
     data = su.ssp_load_data(args[0])
     wave = data['wave']
@@ -47,6 +47,7 @@ if __name__ == '__main__':
                       np.unique(logAge_grid), np.unique(metal_grid),
                       parameters=parameters)
     if options.save:
-        fig.savefig('{}/{}'.format(options.outfolder, figname), dpi=400)
+        os.system('mkdir -p {}'.format(options.outfolder))
+        fig.savefig('{}/{}'.format(options.outfolder, figname), dpi=200)
     else:
         plt.show()
