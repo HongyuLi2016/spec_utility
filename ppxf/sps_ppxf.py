@@ -460,7 +460,9 @@ class ppxf_sps():
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.galaxy*self.obs_norm,
-                         self.syn*self.obs_norm, self.pp.goodpixels, Mweights,
+                         self.syn*self.obs_norm,
+                         self.gas_spectrum*self.obs_norm,
+                         self.pp.goodpixels, Mweights,
                          Lweights, self.logAge_grid, self.metal_grid,
                          fname=fname, outfolder=outfolder)
 

@@ -39,10 +39,11 @@ if __name__ == '__main__':
         print('Fitting spectrum {}'.format(flist[i]))
         wave, flux, error, goodbins =\
             su.load_txt_spec('{}/spec/{}'.format(args[0], flist[i]))
-        lhy.load_galaxy(wave, flux, error=error, good=goodbins,
+        lhy.load_galaxy(wave, flux, error=error, good=goodbins, eml=False,
                         # fit_range=[3322.0, 9000.0])
                         fit_range=[3541.0, 7409.0])
-        lhy.run(moments=2, mdegree=0, clip=False, regul=1./0.004)
+        # lhy.run(moments=2, mdegree=0, clip=False, regul=1./0.004)
+        lhy.run_gas(moments=[2, 2, 2], mdegree=0, clip=False)
         if options.plot:
             lhy.plot(fname='sps_{:04d}.png'.format(i),
                      filterPath='{}/data/SDSS_r_filter'.format(PPXFPATH),

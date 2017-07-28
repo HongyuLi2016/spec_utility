@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     fig = su.plot_sps(wave, obs, syn, goodpixels, Mweights, Lweights,
                       np.unique(logAge_grid), np.unique(metal_grid),
-                      parameters=parameters)
+                      parameters=parameters, gas=gas)
     if options.save:
         os.system('mkdir -p {}'.format(options.outfolder))
         fig.savefig('{}/{}'.format(options.outfolder, figname), dpi=200)
