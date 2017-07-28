@@ -260,6 +260,8 @@ class ppxf_sps():
         mdegree = kwargs.pop("mdegree", 0)
         regul = kwargs.pop("regul", None)
         moments = kwargs.pop("moments", 2)
+        start = kwargs.pop("start", None)
+        clip = kwargs.pop("clip", False)
         if mdegree == 0:
             lam = self.wave
             reddening = 0.0
@@ -268,11 +270,64 @@ class ppxf_sps():
             reddening = None
         c = 299792.458
         dv = c * np.log(self.lamRange_temp[0]/self.wave[0])
-        start = [0.0, 3.0 * self.velscale]
+        if start is None:
+            start = [0.0, 3.0 * self.velscale]
         pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
                   start, mask=self.good, quiet=True, degree=-1,
                   vsyst=dv, clean=False, lam=lam, reddening=reddening,
                   mdegree=mdegree, regul=regul, moments=moments)
+        if clip:
+            sigma_mask = abs(pp.bestfit - self.galaxy) > 3.0 * self.noise
+            start = pp.sol
+            # print start
+            self.good = (~sigma_mask) * self.good
+            pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
+                      start, mask=self.good, quiet=True, degree=-1,
+                      vsyst=dv, clean=False, lam=lam, reddening=reddening,
+                      mdegree=mdegree, regul=regul, moments=-moments)
+        self.pp = pp
+        self.syn = self.pp.bestfit
+        self.mass_weights = self.pp.weights.reshape((self.templates.shape[1],
+                                                     self.templates.shape[2]))\
+            * self.obs_norm / self.temp_norm
+
+    def run_gas(self, *args, **kwargs):
+        '''
+        recommanded parameters
+        moments = 4 (defalt: 2)
+        mdegree = 0 for CAL extinction (defalt: 0)
+                if mdegree is 0, CAL law is used automaticlly
+        regul = 0.0 (defalt: 0)
+        good = mask_array, 1 for good, 0 for mask
+        '''
+        mdegree = kwargs.pop("mdegree", 0)
+        regul = kwargs.pop("regul", None)
+        moments = kwargs.pop("moments", 2)
+        start = kwargs.pop("start", None)
+        clip = kwargs.pop("clip", False)
+        if mdegree == 0:
+            lam = self.wave
+            reddening = 0.0
+        else:
+            lam = None
+            reddening = None
+        c = 299792.458
+        dv = c * np.log(self.lamRange_temp[0]/self.wave[0])
+        if start is None:
+            start = [0.0, 3.0 * self.velscale]
+        pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
+                  start, mask=self.good, quiet=True, degree=-1,
+                  vsyst=dv, clean=False, lam=lam, reddening=reddening,
+                  mdegree=mdegree, regul=regul, moments=moments)
+        if clip:
+            sigma_mask = abs(pp.bestfit - self.galaxy) > 3.0 * self.noise
+            start = pp.sol
+            # print start
+            self.good = (~sigma_mask) * self.good
+            pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
+                      start, mask=self.good, quiet=True, degree=-1,
+                      vsyst=dv, clean=False, lam=lam, reddening=reddening,
+                      mdegree=mdegree, regul=regul, moments=-moments)
         self.pp = pp
         self.syn = self.pp.bestfit
 
@@ -283,9 +338,7 @@ class ppxf_sps():
             return 0.0
 
     def weights(self):
-        return self.pp.weights.reshape((self.templates.shape[1],
-                                       self.templates.shape[2]))\
-            * self.obs_norm / self.temp_norm
+        return self.mass_weights
 
     def nogas_weights(self):
         return self.weights() * self.mnogas_grid
