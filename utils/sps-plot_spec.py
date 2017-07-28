@@ -38,6 +38,7 @@ if __name__ == '__main__':
     ebv = data['ebv']
     logAge_grid = data['logAge_grid']
     metal_grid = data['metal_grid']
+    gas = data.pop('gas', None)
 
     parameters = {'M*/L_int_r': ml_int_r, 'M*/L_obs_r': ml_obs_r,
                   'M<logAge>': MageLog, 'L<logAge>': LageLog,

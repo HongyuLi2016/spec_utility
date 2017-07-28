@@ -156,7 +156,7 @@ def sdss_r_filter(path='./'):
 
 
 def plot_sps(wave, obs, syn, good, Mweights, Lweights, Ages, Z,
-             parameters={}):
+             parameters={}, gas=None):
     # print Ages, Z
     plt.clf()
     plt.figure(figsize=(9, 9))
@@ -167,15 +167,23 @@ def plot_sps(wave, obs, syn, good, Mweights, Lweights, Ages, Z,
     fig = plt.gcf()
     ll, rr = np.min(wave), np.max(wave)
     mn, mx = np.min(syn[good]), np.max(syn[good])
-    resid = mn + obs - syn
+    if gas is None:
+        resid = mn + obs - syn
+    else:
+        resid = mn + obs - syn - gas
     mn1 = np.min(resid[good])
     ax1.set_xlim([ll, rr] + np.array([-0.02, 0.02])*(rr - ll))
     ax1.set_ylim([mn1, mx] + np.array([-0.05, 0.05])*(mx - mn1))
     ax1.plot(wave, obs, 'k', linewidth=0.5)
+    if gas is not None:
+        ax1.plot(wave, syn+gas, 'm', linewidth=0.8)
     ax1.plot(wave, syn, 'r', linewidth=1)
     ax1.plot(wave[good], resid[good], 'd', color='LimeGreen',
              mec='LimeGreen', ms=4)
-    ax1.plot(wave[good], good*0 + mn, '.k', ms=1)
+    if gas is None:
+        ax1.plot(wave[good], good*0 + mn, '.k', ms=1)
+    else:
+        ax1.plot(wave, mn+gas, 'm', lw=1.0)
     w = np.flatnonzero(np.diff(good) > 1)
     if w.size > 0:
         for wj in w:
@@ -290,7 +298,7 @@ def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
 
 
 def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
-                  LageLog, LZLog, Lage, LZ, wave, obs, syn, goodpixels,
+                  LageLog, LZLog, Lage, LZ, wave, obs, syn, gas, goodpixels,
                   Mweights, Lweights, logAge_grid, metal_grid,
                   fname='spsout.dat', outfolder='.'):
     '''
@@ -300,9 +308,9 @@ def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
             'Mnogas': Mnogas, 'MageLog': MageLog,
             'MZLog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
             'LZLog': LZLog, 'Lage': Lage, 'LZ': LZ, 'wave': wave, 'obs': obs,
-            'syn': syn, 'goodpixels': goodpixels, 'Lweights': Lweights,
-            'Mweights': Mweights, 'logAge_grid': logAge_grid,
-            'metal_grid': metal_grid}
+            'syn': syn, 'gas': gas, 'goodpixels': goodpixels,
+            'Lweights': Lweights, 'Mweights': Mweights,
+            'logAge_grid': logAge_grid, 'metal_grid': metal_grid}
     with open('{}/{}'.format(outfolder, fname), 'wb') as f:
         pickle.dump(data, f)
 

@@ -286,6 +286,7 @@ class ppxf_sps():
                       vsyst=dv, clean=False, lam=lam, reddening=reddening,
                       mdegree=mdegree, regul=regul, moments=-moments)
         self.pp = pp
+        self.gas_spectrum = None
         self.syn = self.pp.bestfit
         self.mass_weights = self.pp.weights.reshape((self.templates.shape[1],
                                                      self.templates.shape[2]))\
@@ -302,9 +303,15 @@ class ppxf_sps():
         '''
         mdegree = kwargs.pop("mdegree", 0)
         regul = kwargs.pop("regul", None)
-        moments = kwargs.pop("moments", 2)
+        moments = kwargs.pop("moments", [2, 2, 2])
         start = kwargs.pop("start", None)
         clip = kwargs.pop("clip", False)
+        FWHM_gal = kwargs.pop("FWHM_gal", 2.8)
+        gas_templates, gas_names, line_wave = \
+            util.emission_lines(self.logLamT, [3000.0, 9000.0], FWHM_gal)
+        reg_dim = self.templates.shape[1:]
+        stars_templates = self.templates.reshape(self.templates.shape[0], -1)
+        templates = np.column_stack([stars_templates, gas_templates])
         if mdegree == 0:
             lam = self.wave
             reddening = 0.0
@@ -314,22 +321,43 @@ class ppxf_sps():
         c = 299792.458
         dv = c * np.log(self.lamRange_temp[0]/self.wave[0])
         if start is None:
-            start = [0.0, 3.0 * self.velscale]
-        pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
+            start = [[0.0, 3.0 * self.velscale], [0.0, 3.0 * self.velscale],
+                     [0.0, 3.0 * self.velscale]]
+        n_temps = stars_templates.shape[1]
+        n_balmer = 4   # Number of Balmer lines included in the fit
+        n_forbidden = 7
+        component = [0]*n_temps + [1]*n_balmer + [2]*n_forbidden
+        gas_component = np.array(component) > 0
+
+        pp = ppxf(templates, self.galaxy, self.noise, self.velscale,
                   start, mask=self.good, quiet=True, degree=-1,
                   vsyst=dv, clean=False, lam=lam, reddening=reddening,
-                  mdegree=mdegree, regul=regul, moments=moments)
+                  mdegree=mdegree, regul=regul, reg_dim=reg_dim,
+                  component=component, gas_component=gas_component,
+                  gas_names=gas_names, moments=moments)
         if clip:
             sigma_mask = abs(pp.bestfit - self.galaxy) > 3.0 * self.noise
             start = pp.sol
             # print start
+            for i in range(len(moments)):
+                moments[i] *= -1
             self.good = (~sigma_mask) * self.good
-            pp = ppxf(self.templates, self.galaxy, self.noise, self.velscale,
+            pp = ppxf(templates, self.galaxy, self.noise, self.velscale,
                       start, mask=self.good, quiet=True, degree=-1,
                       vsyst=dv, clean=False, lam=lam, reddening=reddening,
-                      mdegree=mdegree, regul=regul, moments=-moments)
+                      mdegree=mdegree, regul=regul, reg_dim=reg_dim,
+                      component=component, gas_component=gas_component,
+                      gas_names=gas_names, moments=moments)
         self.pp = pp
-        self.syn = self.pp.bestfit
+        spectra = pp.matrix[:, pp.degree+1:]
+        self.gas_spectrum = \
+            spectra[:, gas_component].dot(pp.weights[gas_component])
+        stars_spectrum = pp.bestfit - self.gas_spectrum
+        self.syn = stars_spectrum
+        star_weights = \
+            pp.weights[~gas_component].reshape((self.templates.shape[1],
+                                                self.templates.shape[2]))
+        self.mass_weights = star_weights * self.obs_norm / self.temp_norm
 
     def ebv(self):
         if self.pp.reddening is not None:
@@ -459,7 +487,7 @@ class ppxf_sps():
                         self.luminosity_weights() /
                         self.luminosity_weights().sum(),
                         np.unique(self.logAge_grid), np.unique(self.metal_grid),
-                        parameters=parameters)
+                        parameters=parameters, gas=self.gas_spectrum)
         if fname is not None:
             fig.savefig('{}/{}'.format(outfolder, fname), dpi=400)
 
