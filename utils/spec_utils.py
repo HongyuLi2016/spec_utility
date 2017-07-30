@@ -192,7 +192,8 @@ def plot_sps(wave, obs, syn, good, Mweights, Lweights, Ages, Z,
         w = np.hstack([0, w, w + 1, -1])  # Add first and last point
     else:
         w = [0, -1]
-    for gj in good[w]:
+    # for gj in good[w]:
+    for gj in good[[0, -1]]:
         ax1.plot(wave[[gj, gj]], [mn, syn[gj]], 'LimeGreen')
     set_labels(ax1)
     ax2 = plt.subplot(gs[1, 0:2])
@@ -298,8 +299,8 @@ def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
 
 
 def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
-                  LageLog, LZLog, Lage, LZ, wave, obs, syn, gas, goodpixels,
-                  Mweights, Lweights, logAge_grid, metal_grid,
+                  LageLog, LZLog, Lage, LZ, wave, obs, error, syn, gas,
+                  goodpixels, Mweights, Lweights, logAge_grid, metal_grid,
                   fname='spsout.dat', outfolder='.'):
     '''
     dump sps results into a binary file (dictionary)
@@ -308,7 +309,7 @@ def ssp_dump_data(ml_obs_r, ml_int_r, ebv, Mnogas, MageLog, MZlog, Mage, MZ,
             'Mnogas': Mnogas, 'MageLog': MageLog,
             'MZLog': MZlog, 'Mage': Mage, 'MZ': MZ, 'LageLog': LageLog,
             'LZLog': LZLog, 'Lage': Lage, 'LZ': LZ, 'wave': wave, 'obs': obs,
-            'syn': syn, 'gas': gas, 'goodpixels': goodpixels,
+            'error': error, 'syn': syn, 'gas': gas, 'goodpixels': goodpixels,
             'Lweights': Lweights, 'Mweights': Mweights,
             'logAge_grid': logAge_grid, 'metal_grid': metal_grid}
     with open('{}/{}'.format(outfolder, fname), 'wb') as f:

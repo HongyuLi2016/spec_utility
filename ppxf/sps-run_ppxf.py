@@ -25,11 +25,11 @@ if __name__ == '__main__':
     # lhy.select_templates(range(24, 50), range(1, 7))
     lhy.select_templates(list(range(1, 50, 2)), list(range(1, 7)))
     # lhy.load_bc03(2.8, path='{}/BC03_Salp'.format(PPXFPATH))
-    age = [20, 45, 55, 61, 67, 70, 78, 90, 104, 110, 116, 120, 125,
-           130, 135, 138, 139, 150, 158, 166, 171, 181, 193, 201, 213]
-    # age = [113, 115, 117, 119, 121, 123, 125, 127, 129, 131, 133,
-    #        135, 137, 139, 143, 147, 152, 155, 159, 163, 169, 177,
-    #        186, 197, 210]
+    # age = [20, 45, 55, 61, 67, 70, 78, 90, 104, 110, 116, 120, 125,
+    #        130, 135, 138, 139, 150, 158, 166, 171, 181, 193, 201, 213]
+    age = [113, 115, 117, 119, 121, 123, 125, 127, 129, 131, 133,
+           135, 137, 139, 143, 147, 152, 155, 159, 163, 169, 177,
+           186, 197, 210]
     for i in range(len(age)):
         age[i] -= 1
     # lhy.select_templates(age, range(0, 6))
@@ -42,8 +42,8 @@ if __name__ == '__main__':
         lhy.load_galaxy(wave, flux, error=error, good=goodbins, eml=False,
                         # fit_range=[3322.0, 9000.0])
                         fit_range=[3541.0, 7409.0])
-        # lhy.run(moments=2, mdegree=0, clip=False, regul=1./0.004)
-        lhy.run_gas(moments=[2, 2, 2], mdegree=0, clip=False)
+        # lhy.run(moments=2, mdegree=0, clip=False, regul=None)
+        lhy.run_gas(moments=[2, 2, 2], mdegree=0, clip=True)
         if options.plot:
             lhy.plot(fname='sps_{:04d}.png'.format(i),
                      filterPath='{}/data/SDSS_r_filter'.format(PPXFPATH),

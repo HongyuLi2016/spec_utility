@@ -456,12 +456,15 @@ class ppxf_sps():
         Mnogas = self.nogas_weights().sum()
         Mweights = self.weights()/self.weights().sum()
         Lweights = self.luminosity_weights()/self.luminosity_weights().sum()
+        if self.gas_spectrum is None:
+            gas = None
+        else:
+            gas = self.gas_spectrum*self.obs_norm
         su.ssp_dump_data(ml_obs, self.ml_r(), self.ebv(), Mnogas,
                          self.MageLog(), self.MZLog(), self.Mage(), self.MZ(),
                          self.LageLog(), self.LZLog(), self.Lage(), self.LZ(),
                          self.wave, self.galaxy*self.obs_norm,
-                         self.syn*self.obs_norm,
-                         self.gas_spectrum*self.obs_norm,
+                         self.noise*self.obs_norm, self.syn*self.obs_norm, gas,
                          self.pp.goodpixels, Mweights,
                          Lweights, self.logAge_grid, self.metal_grid,
                          fname=fname, outfolder=outfolder)
