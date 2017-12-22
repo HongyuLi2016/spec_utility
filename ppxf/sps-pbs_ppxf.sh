@@ -8,7 +8,7 @@ printf '#!/bin/bash
 #PBS -e %s
 #PBS -l nodes=1:ppn=1
 cd %s
-/share/data/D/lhy/manga/SPS/mpl5/make_spec.py %s 
+# /share/data/D/lhy/manga/SPS/mpl5/make_spec.py %s 
 sps-run_ppxf.py %s
 sps-maps.py %s -f dump
 sps-rebin_maps.py %s -f dump

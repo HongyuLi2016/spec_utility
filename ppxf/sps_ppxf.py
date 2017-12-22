@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# File              : sps_ppxf.py
+# Author            : Hongyu Li <lhy88562189@gmail.com>
+# Date              : 17.09.2017
+# Last Modified Date: 17.09.2017
+# Last Modified By  : Hongyu Li <lhy88562189@gmail.com>
 import numpy as np
 import pyfits
 import os
@@ -235,7 +241,8 @@ class ppxf_sps():
                                                    velscale=velscale)
         noise, logWave, velscale = util.log_rebin(lamRange, fit_error,
                                                   velscale=velscale)
-        new_good = convert_mask(fit_wave, fit_good, np.exp(logWave))
+        new_good = convert_mask(fit_wave, fit_good, np.exp(logWave)) *\
+            (galaxy > 0.0)
         self.galaxy = galaxy
         self.noise = noise
         self.wave = np.exp(logWave)

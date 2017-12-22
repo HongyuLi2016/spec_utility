@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for i in range(len(age)):
         age[i] -= 1
     # lhy.select_templates(age, range(0, 6))
-    print('Star running pPXF')
+    print('Start running pPXF')
     print('--------------------------------------------------')
     for i in range(len(flist)):
         print('Fitting spectrum {}'.format(flist[i]))
@@ -41,9 +41,10 @@ if __name__ == '__main__':
             su.load_txt_spec('{}/spec/{}'.format(args[0], flist[i]))
         lhy.load_galaxy(wave, flux, error=error, good=goodbins, eml=False,
                         # fit_range=[3322.0, 9000.0])
-                        fit_range=[3541.0, 7409.0])
+                        fit_range=[3541.0, 7400.0])
         # lhy.run(moments=2, mdegree=0, clip=False, regul=None)
-        lhy.run_gas(moments=[2, 2, 2], mdegree=0, clip=True)
+        regul=1.0/0.024
+        lhy.run_gas(moments=[2, 2, 2], mdegree=0, clip=True, regul=None)
         if options.plot:
             lhy.plot(fname='sps_{:04d}.png'.format(i),
                      filterPath='{}/data/SDSS_r_filter'.format(PPXFPATH),

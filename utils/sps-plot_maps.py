@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# File              : /Users/lhy/astro_workspace/astro-packages/bin/sps-plot_maps.py
+# Author            : Hongyu Li <lhy88562189@gmail.com>
+# Date              : 13.09.2017
+# Last Modified Date: 13.09.2017
+# Last Modified By  : Hongyu Li <lhy88562189@gmail.com>
 import numpy as np
 from JAM.utils import util_fig
 from JAM.utils import velocity_plot
@@ -74,8 +80,8 @@ for key in maps.keys():
     fig = plt.figure(figsize=(4, 3.5))
     ax = fig.add_subplot(111)
     velocity_plot(rebinxbin[bad], rebinybin[bad], maps[key][bad],
-                  barlabel=barlabels[key], vmap='dots')
-    ax.plot(xx*0.5, yy*0.5, 'c', alpha=0.6, lw=1)
+                  barlabel=barlabels[key], vmap='map', markersize=0.5)
+    ax.plot(xx*0.125, yy*0.125, 'c', alpha=0.6, lw=1)
     ax.plot(xx*1.0, yy*1.0, 'c', alpha=0.6, lw=1)
-    ax.plot(xx*1.5, yy*1.5, 'c', alpha=0.6, lw=1)
+    # ax.plot(xx*1.5, yy*1.5, 'c', alpha=0.6, lw=1)
     fig.savefig('{}/properties/map-{}.png'.format(args[0], key), dpi=150)

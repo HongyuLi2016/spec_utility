@@ -1,4 +1,10 @@
-#!/usr/bin/evn python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# File              : spec_utility/utils/spec_utils.py
+# Author            : Hongyu Li <lhy88562189@gmail.com>
+# Date              : 15.09.2017
+# Last Modified Date: 15.09.2017
+# Last Modified By  : Hongyu Li <lhy88562189@gmail.com>
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
@@ -8,6 +14,7 @@ from matplotlib import colors, rc
 from matplotlib.patches import Rectangle
 import pyfits
 import pickle
+import matplotlib.ticker as ticker
 rc('mathtext', fontset='stix')
 
 _cdict = {'red': ((0.000,   0.01,   0.01),
@@ -217,7 +224,7 @@ def plot_sps(wave, obs, syn, good, Mweights, Lweights, Ages, Z,
 def set_labels(ax, rotate=False, font=ticks_font):
     for l in ax.get_xticklabels():
         if rotate:
-            l.set_rotation(60)
+            l.set_rotation(70)
         l.set_fontproperties(font)
     for l in ax.get_yticklabels():
         # if rotate:
@@ -294,6 +301,11 @@ def plot_2d(x, y, z, ax=None, log=True, c_lim=None, fig=None,
     if clabel is not None:
         axc.set_ylabel(clabel, fontproperties=label_font)
     set_labels(axc, font=ticks_font1)
+    formatter = ticker.FormatStrFormatter('%1.2f')
+    ax.yaxis.set_major_formatter(formatter)
+    ax.xaxis.set_major_formatter(formatter)
+    formatter = ticker.FormatStrFormatter('%1.2f')
+    axc.yaxis.set_major_formatter(formatter)
     ax.set_ylabel(ylabel, fontproperties=label_font)
     ax.set_xlabel(xlabel, fontproperties=label_font)
 

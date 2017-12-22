@@ -23,7 +23,7 @@ if __name__ == '__main__':
     else:
         path = options.path
     lhy = read_DRP('{}/manga-{}-LINCUBE.fits.gz'.format(path, ID))
-    lhy.deRedden()
+    # lhy.deRedden()
     lhy.deRedshift(z=z)
     sn = lhy.SNR()
     lhy.voronoiBin(outFolder='{}/spec'.format(args[0]), targetSN=30)
